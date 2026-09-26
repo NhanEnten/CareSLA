@@ -57,7 +57,7 @@ async function main() {
   await time.increase(61);
   await c.connect(stranger).checkTimeout(1);
   await expectRevert(c.checkTimeout(1), "not expired"); // không ghi 2 lần ở cùng cấp
-  let ev = await c.getFunction("getEvent")(1);
+  let ev = await c.getFallEvent(1);
   console.log("6. Quá hạn → cấp", ev.level.toString(), "(backup), vi phạm:", (await c.getPlan(1)).violations.toString());
 
   await expectRevert(c.connect(stranger).acknowledge(1), "not on duty");
@@ -68,7 +68,7 @@ async function main() {
   const ts2 = await time.latest();
   const arr = await sign(device, 2, ts2, 3, dataHash); // nonce 2 coi như đã dùng cho CANCEL off-chain
   await c.connect(gateway).confirmArrival(1, ts2, 3, dataHash, arr.sig);
-  ev = await c.getFunction("getEvent")(1);
+  ev = await c.getFallEvent(1);
   console.log("8. Có mặt, status =", ev.status.toString(), "(2 = Arrived)");
 
   // Sự cố #2: không ai phản hồi → 2 vi phạm, lần xác nhận trễ không xóa vi phạm

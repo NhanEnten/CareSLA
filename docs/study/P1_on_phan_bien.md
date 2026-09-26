@@ -180,7 +180,7 @@ Không. On-chain chỉ có `dataHash` (keccak256 của dữ liệu cảm biến 
 | P2 (test, deploy, keeper) | Kết quả test, số gas, địa chỉ deploy Sepolia, config Hardhat | `CareSLA.sol`; cấu hình compiler bắt buộc (IC-10); luật để viết test |
 | P3 (ESP32) | Gói FALL / ARRIVAL đã ký đúng định dạng 69 byte | Luật nonce dùng chung, tăng dần (IC-07) |
 | P4 (AI) | Không trực tiếp: AI quyết định khi nào có FALL | Không trực tiếp |
-| P5 (gateway, dashboard) | `docs/test_vectors.json` để kiểm chữ ký | ABI, thứ tự trường của `getPlan` / `getEvent` (IC-01), lưu ý tên `getEvent` trong ethers v6 (IC-09), gửi giao dịch đúng thứ tự nonce |
+| P5 (gateway, dashboard) | `docs/test_vectors.json` để kiểm chữ ký | ABI, thứ tự trường của `getPlan` / `getFallEvent` (IC-01); hàm đọc sự cố đổi tên thành `getFallEvent` vì trùng tên với ethers v6 (IC-09), gửi giao dịch đúng thứ tự nonce |
 
 ## 8. Ba câu tự kiểm tra (trả lời không nhìn tài liệu)
 

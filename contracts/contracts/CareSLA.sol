@@ -322,7 +322,8 @@ contract CareSLA is ReentrancyGuard {
         );
     }
 
-    function getEvent(uint256 eventId) external view returns (
+    /// Đặt tên getFallEvent (không phải getEvent) vì ethers v6 đã có sẵn Contract.getEvent (IC-09)
+    function getFallEvent(uint256 eventId) external view returns (
         uint256 planId, uint64 ts, bytes32 dataHash,
         address primary, address backup,
         uint64 reportedAt, uint64 deadline, uint8 level, uint8 status,

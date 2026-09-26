@@ -6,7 +6,7 @@
 
 ---
 
-## IC-01. `getPlan` / `getEvent` trả về những trường nào?
+## IC-01. `getPlan` / `getFallEvent` trả về những trường nào?
 - **Người đề xuất:** P1 · **Ảnh hưởng:** P1, P2 (test), P5 (gateway, dashboard) · **Trạng thái:** CHỜ CHỐT
 - **Vấn đề:** mục 6.3 chỉ ghi `returns (...)`. Dashboard và gateway cần biết đúng thứ tự trường để đọc.
 - **Đề xuất:**
@@ -17,7 +17,7 @@
       uint256 deposit, bool accepted, bool settled,
       uint256 violations, uint256 shiftCount, uint256 pendingEvents); // pendingEvents thêm theo IC-12
 
-  function getEvent(uint256 eventId) external view returns (
+  function getFallEvent(uint256 eventId) external view returns (   // tên mới theo IC-09
       uint256 planId, uint64 ts, bytes32 dataHash,
       address primary, address backup,
       uint64 reportedAt, uint64 deadline, uint8 level, uint8 status,
@@ -62,14 +62,14 @@
 - **Quyết định:** …
 
 ## IC-07. Luật kiểm tra của `confirmArrival` (nonce, cửa sổ thời gian)
-- **Người đề xuất:** P1 · **Ảnh hưởng:** P1, P3 (firmware), P5 (gateway) · **Trạng thái:** CHỜ CHỐT
+- **Người đề xuất:** P1 · **Ảnh hưởng:** P1, P3 (firmware), P5 (gateway) · **Trạng thái:** P1 CHỌN A (2026-09-26), code đã có — chờ nhóm xác nhận
 - **Đề xuất:**
   - FALL, ARRIVAL và CANCEL dùng **chung một dãy nonce** của thiết bị. CANCEL cũng tiêu một nonce dù chỉ ghi off-chain, nên nonce trên chain có thể nhảy cóc. Điều đó hợp lệ vì luật là `nonce > lastNonce`, không bắt buộc liên tiếp.
   - ARRIVAL dùng cùng cửa sổ `ts ∈ [block.timestamp − 600, block.timestamp + 60]` như FALL, và phải có `ts ≥ ts của FALL`.
   - Chữ ký phải khôi phục ra đúng `device` của plan chứa sự cố, với `eventType = 2`.
   - Ghi `arrivedAt = block.timestamp`, không dùng `ts`, để thời điểm tính trách nhiệm luôn là thời gian chain thống nhất.
 - **Hệ quả cho P5:** gateway phải gửi giao dịch **theo đúng thứ tự nonce**. Nếu gửi ARRIVAL (nonce 43) trước FALL (nonce 42) thì FALL sẽ bị revert.
-- **Quyết định:** …
+- **Quyết định:** P1 chọn phương án đề xuất (nonce chung, gửi đúng thứ tự, ARRIVAL lấy eventId từ receipt của FALL). Chờ nhóm xác nhận.
 
 ## IC-08. Xác nhận trễ trước khi keeper kịp gọi `checkTimeout`
 - **Người đề xuất:** P1 · **Ảnh hưởng:** P1, P2 (test) · **Trạng thái:** CHỜ CHỐT (code đã cài theo đề xuất)
@@ -78,11 +78,11 @@
 - **Quyết định:** …
 
 ## IC-09. Tên hàm `getEvent` trùng với hàm có sẵn của ethers v6
-- **Người đề xuất:** P1 · **Ảnh hưởng:** P1, P2 (test, script), P5 (dashboard) · **Trạng thái:** CHỜ CHỐT
+- **Người đề xuất:** P1 · **Ảnh hưởng:** P1, P2 (test, script), P5 (dashboard) · **Trạng thái:** P1 CHỌN A (2026-09-26), **đã đổi tên thành `getFallEvent`** — chờ nhóm xác nhận
 - **Vấn đề (đã chạy thử):** trong ethers v6, mọi object `Contract` đã có sẵn `getEvent(key)` để lấy event log. Gọi `contract.getEvent(1)` sẽ chạy nhầm hàm của ethers và báo lỗi `TypeError: key.format is not a function`. web3.py không bị ảnh hưởng.
 - **Phương án A (đề xuất):** đổi tên hàm trong contract thành `getFallEvent(uint256)`. Cách này đơn giản, không ai phải nhớ mẹo.
 - **Phương án B:** giữ tên `getEvent`, và mọi code JS phải gọi `contract.getFunction("getEvent")(id)`.
-- **Quyết định:** …
+- **Quyết định:** P1 chọn Phương án A — đổi tên thành `getFallEvent`. Chờ nhóm xác nhận.
 
 ## IC-10. Cấu hình compiler bắt buộc cho `hardhat.config.js` (P2)
 - **Người đề xuất:** P1 · **Ảnh hưởng:** P2 · **Trạng thái:** CHỜ CHỐT
@@ -91,7 +91,7 @@
   solidity: { version: "0.8.24", settings: { optimizer: { enabled: true, runs: 200 }, viaIR: true, evmVersion: "cancun" } }
   ```
   - `0.8.24` + `cancun`: OpenZeppelin 5.6.1 (`MessageHashUtils`) yêu cầu `^0.8.24`.
-  - `viaIR: true`: `getPlan` / `getEvent` trả về 11–12 giá trị, không có dòng này sẽ báo "stack too deep".
+  - `viaIR: true`: `getPlan` / `getFallEvent` trả về 12 giá trị, không có dòng này sẽ báo "stack too deep".
   - Khi verify trên Etherscan cũng phải dùng đúng các thiết lập này.
 - **Quyết định:** …
 
@@ -103,7 +103,7 @@
 - **Quyết định:** …
 
 ## IC-12. 🟠 Trung tâm gọi `settle` trước khi vi phạm kịp được ghi
-- **Người đề xuất:** P1 · **Ảnh hưởng:** P1, P2 (test, keeper, script demo), P5 (dashboard nếu có nút settle) · **Trạng thái:** CHỜ CHỐT — **code đã sửa theo phương án A** (P1 đồng ý, 2026-09-26)
+- **Người đề xuất:** P1 · **Ảnh hưởng:** P1, P2 (test, keeper, script demo), P5 (dashboard nếu có nút settle) · **Trạng thái:** P1 CHỌN A (2026-09-26), code đã có — chờ nhóm xác nhận
 - **Vấn đề (đã chạy thử):** té ngã lúc `periodEnd − 20 s`, không ai phản hồi. Lúc `periodEnd + 1 s`, hạn chót chưa tới, trung tâm gọi `settle` và nhận trọn 1 ETH. Vi phạm ghi sau đó không còn tác dụng. Tương tự, gateway đang giữ hàng đợi (chain chậm) thì sự cố cuối kỳ chưa kịp lên chain đã bị settle.
 - **Phương án A (đề xuất):**
   1. Thêm `pendingEvents` vào `Plan`: +1 khi `reportFall`, −1 khi sự cố rời trạng thái "còn có thể bị phạt" (được nhận / có mặt khi đang `Open`, hoặc lên cấp 2).
@@ -114,7 +114,7 @@
   - **Hệ quả cho P2 (keeper, script demo):** muốn settle thì phải gọi `checkTimeout` cho các sự cố còn treo cho tới khi `pendingEvents == 0`.
   - **Hệ quả demo:** phải chờ 10 phút sau `periodEnd` mới settle được. Có thể đặt `periodEnd` sớm, hoặc giảm thời gian chờ này cho demo.
 - **Phương án B:** chỉ thêm thời gian chờ `periodEnd + 600 + 2 × slaSeconds` và dựa vào keeper gọi `checkTimeout` trong lúc chờ. Code ít hơn nhưng keeper chết thì vẫn lọt.
-- **Quyết định:** …
+- **Quyết định:** P1 chọn Phương án A — `pendingEvents` + `SETTLE_DELAY = 600` + `ts <= periodEnd`; demo dùng hợp đồng kỳ ngắn tạo trước. Chờ nhóm xác nhận.
 
 ## IC-13. 🟡 Chuyển tiền kiểu "đẩy" có thể bị chặn
 - **Người đề xuất:** P1 · **Ảnh hưởng:** P1, P5 (dashboard thêm nút rút) · **Trạng thái:** CHỜ CHỐT — **chưa sửa code**

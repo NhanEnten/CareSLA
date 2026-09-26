@@ -2,9 +2,15 @@
 
 > **Dành cho mọi AI agent trong nhóm.** Đọc file này ngay **sau** `AGENTS.md`, trước prompt riêng `prompts/Px_*.md`.
 > Bản cập nhật mới nhất nằm trên cùng. Nếu nội dung ở đây mâu thuẫn với `AGENTS.md`, **`AGENTS.md` thắng**, trừ các mục ghi rõ "ĐÃ CHỐT". Khi đó hãy báo người dùng để P1 cập nhật `AGENTS.md`.
+> Chi tiết họp và gợi ý sửa từng người: `docs/hop_chot_IC.md` (mục 6).
 > Các mục còn **CHỜ CHỐT** không phải luật chính thức. Đừng tự cài theo chúng nếu không thuộc phần của bạn. Hỏi người dùng trước.
 
 ---
+
+## [2026-09-26, lần 2] P1 chọn phương án A cho IC-07, IC-09, IC-12
+- **IC-09:** hàm `getEvent` đã **đổi tên thành `getFallEvent`**, tham số và giá trị trả về giữ nguyên. Ai viết code đọc sự cố (test P2, keeper P2, gateway/dashboard P5) dùng tên mới.
+- **IC-07, IC-12:** giữ như code hiện tại. Việc cụ thể của từng người nằm ở `docs/hop_chot_IC.md` mục 6.
+- Vẫn chờ cả nhóm xác nhận. AGENTS.md mục 6.3 **chưa** được sửa.
 
 ## [2026-09-26] P1 — Contract đã chạy được, 13 điểm giao diện cần chốt
 
@@ -28,7 +34,7 @@ Chi tiết từng mục (vấn đề, phương án, lý do) nằm trong `docs/in
 
 | Mã | Nội dung đề xuất | Ảnh hưởng | Code |
 |---|---|---|---|
-| IC-01 | Thứ tự các giá trị trả về của `getPlan` / `getEvent`; ID bắt đầu từ 1 | P2, P5 | Có |
+| IC-01 | Thứ tự các giá trị trả về của `getPlan` / `getFallEvent`; ID bắt đầu từ 1 | P2, P5 | Có |
 | IC-02 | `confirmArrival` được gọi khi chưa `acknowledge` | P2, P3, P5 | Có |
 | IC-03 | SLA chỉ tính tới lúc nhận, không tính tới lúc có mặt (giới hạn, ghi báo cáo) | Báo cáo | — |
 | IC-04 | Lên cấp 2: `newDeadline = 0`; `checkTimeout` sau đó báo `"max level"` | P2 (keeper), P5 | Có |
@@ -36,7 +42,7 @@ Chi tiết từng mục (vấn đề, phương án, lý do) nằm trong `docs/in
 | IC-06 | Cấm ca trực chồng giờ; primary ≠ backup | P2 | Có |
 | IC-07 | FALL / ARRIVAL / CANCEL dùng **chung một dãy nonce**, được nhảy số; gateway gửi đúng thứ tự nonce | **P3, P5** | Có |
 | IC-08 | Bấm nhận trễ (trước khi keeper gọi) vẫn bị ghi vi phạm | P2 | Có |
-| IC-09 | Tên `getEvent` trùng với hàm có sẵn của ethers v6; đề xuất đổi thành `getFallEvent` | **P2, P5** | Chưa đổi tên |
+| IC-09 | Tên `getEvent` trùng với hàm có sẵn của ethers v6 → **đã đổi thành `getFallEvent`** | **P2, P5** | Có |
 | IC-10 | Cấu hình compiler bắt buộc (`viaIR: true`...) | **P2** | Có (config tạm) |
 | IC-11 | 🔴 Nonce tính theo `planId`, không theo thiết bị (vá lỗ hổng hợp đồng bù nhìn) | P2, P5 | Có |
 | IC-12 | 🟠 `settle` chờ `periodEnd + 600 s` và không còn sự cố treo; `reportFall` chỉ nhận `ts <= periodEnd` | **P2**, P5 | Có |
@@ -50,7 +56,7 @@ Chi tiết từng mục (vấn đề, phương án, lý do) nằm trong `docs/in
   solidity: { version: "0.8.24", settings: { optimizer: { enabled: true, runs: 200 }, viaIR: true, evmVersion: "cancun" } }
   ```
 - Đã cài sẵn: `hardhat@2.29.1`, `@nomicfoundation/hardhat-toolbox@5.0.0`, `ethers@6.17.0`, `@openzeppelin/contracts@5.6.1`.
-- Trong test JS, gọi hàm đọc sự cố bằng `contract.getFunction("getEvent")(id)`, **không** dùng `contract.getEvent(id)` (IC-09).
+- Hàm đọc sự cố giờ tên là **`getFallEvent(id)`** (IC-09). Test JS gọi `contract.getFallEvent(id)`. Keeper Python: `contract.functions.getFallEvent(i).call()`. Prompt P2 đang ghi `getEvent(i)` ở phần keeper, hãy đổi theo.
 - Keeper:
   - `checkTimeout` báo `"not expired"`: chưa tới hạn, thử lại sau.
   - Báo `"not open"` hoặc `"max level"`: sự cố đã xong, **ngừng gọi** cho sự cố đó.
@@ -71,7 +77,7 @@ Chi tiết từng mục (vấn đề, phương án, lý do) nằm trong `docs/in
 - Gateway phải gửi giao dịch lên chain **đúng thứ tự nonce**. Gửi ARRIVAL (nonce 43) trước FALL (nonce 42) thì FALL sẽ bị từ chối.
 - Hàng đợi của gateway phải gửi xong sự cố trong vòng **10 phút** kể từ `ts`, nếu không contract báo `"ts too old"`.
 - Dashboard (ethers v6):
-  - Gọi `contract.getFunction("getEvent")(id)`, không dùng `contract.getEvent(id)` (IC-09).
+  - Hàm đọc sự cố tên là **`getFallEvent(id)`** (IC-09). Gọi `contract.getFallEvent(id)`.
   - `getPlan` trả về 12 giá trị, giá trị cuối là `pendingEvents`.
   - `status`: 0 = Open, 1 = Acknowledged, 2 = Arrived. `level`: 0 = primary, 1 = backup, 2 = đã báo gia đình.
 - `lastNonce` giờ tra theo **planId** (`lastNonce(uint256)`), không theo địa chỉ thiết bị.
