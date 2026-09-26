@@ -1,0 +1,29 @@
+# Bí mật: KHÔNG BAO GIỜ commit (AGENTS.md mục 9.7)
+.env
+.env.*
+!.env.example
+secrets.h
+*.pem
+*.key
+
+# Node / Hardhat
+node_modules/
+contracts/cache/
+contracts/artifacts/
+contracts/typechain-types/
+contracts/coverage/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ESP-IDF
+iot_code/build/
+iot_code/sdkconfig.old
+
+# Hệ điều hành / editor
+.DS_Store
+.vscode/
+.idea/
