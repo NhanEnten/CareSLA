@@ -1,0 +1,57 @@
+{
+  "note": "Khóa CHỈ ĐỂ TEST, không dùng cho thiết bị thật",
+  "generator": "tools/make_test_vector.py",
+  "privateKey": "0xdccf9f32444f833a445df92f6d393a2b8b58a0de9729c938014e35708f99b164",
+  "device": "0xffa91033cf6a9abae19b274f5a8d6c83c7ffb429",
+  "vectors": [
+    {
+      "name": "fall_basic",
+      "eventType": 1,
+      "timestamp": 2000000000,
+      "nonce": 42,
+      "dataHash": "0x7b4ed6f3358d7f6f282aa901fc4b096c1ecde498dd589e1a330fb0c6632e2af9",
+      "samples_b64": "ZAA4/wBABQD7/wAAeABM/4A+BwD9/wEAAID/fwAAAQD//wAB",
+      "packed": "0xffa91033cf6a9abae19b274f5a8d6c83c7ffb429010000000077359400000000000000002a7b4ed6f3358d7f6f282aa901fc4b096c1ecde498dd589e1a330fb0c6632e2af9",
+      "messageHash": "0x3ec19d7fba487c8df9d6ae79fb9a33fea6589ee90f9b9e76256d5f32b3e49239",
+      "ethSigned": "0xf3664659d88476023be843773cdbf2cff2362810231e2aa000ebc110a0f7c66a",
+      "sig": "0xee3149e2a2a162a85253f712d6faf4163bbc79a782c258b3face7616a9f2a91742bcb714dea3c8694f5d832b43c2cfdb3f64eaf9de3f3eef495bb23a3c55ba371c",
+      "v": 28
+    },
+    {
+      "name": "arrival_basic",
+      "eventType": 2,
+      "timestamp": 2000000030,
+      "nonce": 43,
+      "dataHash": "0x7b4ed6f3358d7f6f282aa901fc4b096c1ecde498dd589e1a330fb0c6632e2af9",
+      "packed": "0xffa91033cf6a9abae19b274f5a8d6c83c7ffb42902000000007735941e000000000000002b7b4ed6f3358d7f6f282aa901fc4b096c1ecde498dd589e1a330fb0c6632e2af9",
+      "messageHash": "0x6320c9ed2441b65aa38e186619c5913c3226083f3c3d9f9cd98f8fc0e582ee40",
+      "ethSigned": "0x752691c986e9048ef279367853bf77b22d17407799d4933159b8b1c0cd97b864",
+      "sig": "0xac9037ba0ab19eff214f23f7dd7607db03a08383f348be680c9237b362d592ea639ddc8e449ba5566703e7abea2cbad6c7f39fdc0a9a163ada04bb505876d9371c",
+      "v": 28
+    },
+    {
+      "name": "cancel_basic",
+      "eventType": 3,
+      "timestamp": 2000000060,
+      "nonce": 44,
+      "dataHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "packed": "0xffa91033cf6a9abae19b274f5a8d6c83c7ffb42903000000007735943c000000000000002c0000000000000000000000000000000000000000000000000000000000000000",
+      "messageHash": "0xee2694ae1129f29ac3d345f4891e6c77a0c9f82984542307f95c718f0f2751f1",
+      "ethSigned": "0x45790ccdf722b7ba3595a3b7bb6e0cde16ca2c447b0b2d1d295ca56f437753b9",
+      "sig": "0x5460de1e2d82150676788b47f2f7a8326a715bf6d1dc6d98c374bd6771dfb52173771cc82ad119914fef3065dc43644a6aa11b882079e02279d55cd7baf8afda1c",
+      "v": 28
+    },
+    {
+      "name": "fall_big_nonce",
+      "eventType": 1,
+      "timestamp": 2000000100,
+      "nonce": 1099511627783,
+      "dataHash": "0x7b4ed6f3358d7f6f282aa901fc4b096c1ecde498dd589e1a330fb0c6632e2af9",
+      "packed": "0xffa91033cf6a9abae19b274f5a8d6c83c7ffb42901000000007735946400000100000000077b4ed6f3358d7f6f282aa901fc4b096c1ecde498dd589e1a330fb0c6632e2af9",
+      "messageHash": "0xcddeefac69ec48db8ee295bbc556d25cdf0cf442a89b94b2c04f6324bfca5c8d",
+      "ethSigned": "0xeabd420b2b7ea1a6f2fffee8beda2a617fd03988fbfa8e2e274f28c898f8a762",
+      "sig": "0xd548871b02933f58ae8ef9881c4de5d53cf622035d8861065fee151e67acd0d9754e26112529e6ca2ead31cef250e726f52ac3950b2623d477abde2dfd205e831b",
+      "v": 27
+    }
+  ]
+}
