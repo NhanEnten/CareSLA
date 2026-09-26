@@ -11,6 +11,9 @@
 - **IC-09:** hàm `getEvent` đã **đổi tên thành `getFallEvent`**, tham số và giá trị trả về giữ nguyên. Ai viết code đọc sự cố (test P2, keeper P2, gateway/dashboard P5) dùng tên mới.
 - **IC-07, IC-12:** giữ như code hiện tại. Việc cụ thể của từng người nằm ở `docs/hop_chot_IC.md` mục 6.
 - Vẫn chờ cả nhóm xác nhận. AGENTS.md mục 6.3 **chưa** được sửa.
+- **Mới — IC-14 (định dạng `docs/test_vectors.json`):** xem `docs/interface_changes.md`. Test của P1 đã sẵn sàng: `contracts/test/signature.vector.test.js` (24 test đạt với file mẫu `contracts/p1_tmp/sample_test_vectors.json`).
+  - **P5:** sinh file theo IC-14. Lưu ý `timestamp` ở tương lai (đề xuất `2000000000`). Chạy thử `cd contracts && npx hardhat test test/signature.vector.test.js`. Dùng cùng khóa và input với file mẫu thì chữ ký phải giống hệt từng byte.
+  - **P3:** chữ ký ESP32 phải là **low-s**, nếu không contract từ chối (đã chạy thử). So từng tầng `packed` → `messageHash` → `ethSigned` → `sig` với file vector.
 
 ## [2026-09-26] P1 — Contract đã chạy được, 13 điểm giao diện cần chốt
 
@@ -47,6 +50,7 @@ Chi tiết từng mục (vấn đề, phương án, lý do) nằm trong `docs/in
 | IC-11 | 🔴 Nonce tính theo `planId`, không theo thiết bị (vá lỗ hổng hợp đồng bù nhìn) | P2, P5 | Có |
 | IC-12 | 🟠 `settle` chờ `periodEnd + 600 s` và không còn sự cố treo; `reportFall` chỉ nhận `ts <= periodEnd` | **P2**, P5 | Có |
 | IC-13 | 🟡 Chuyển tiền kiểu "đẩy" có thể bị chặn nếu một bên là contract (ghi báo cáo) | Báo cáo | — |
+| IC-14 | Định dạng `docs/test_vectors.json` (timestamp ở tương lai, có cả v = 27/28, low-s) | **P5, P3** | Test sẵn sàng |
 
 ### 3. Việc cần làm theo từng người
 

@@ -122,3 +122,40 @@
 - **Phương án A (đề xuất):** giữ nguyên, ghi vào báo cáo là giới hạn đã biết. Ưu tiên thấp.
 - **Phương án B:** kiểu "rút" (pull): `settle` chỉ ghi `pendingWithdrawal[addr]`, thêm hàm `withdraw()`. Thêm 1 hàm vào giao diện.
 - **Quyết định:** …
+
+## IC-14. Định dạng `docs/test_vectors.json`
+- **Người đề xuất:** P1 · **Ảnh hưởng:** P5 (sinh file), P3 (so khớp trên ESP32), P1 (test) · **Trạng thái:** CHỜ CHỐT
+- **Vì sao cần:** AGENTS.md mục 6.2 bắt ESP32, gateway và contract cùng khớp một bộ vector, nhưng chưa quy định định dạng file. Nếu P5 và P1 hiểu khác nhau, test sẽ không đọc được file.
+- **Đề xuất:**
+  ```json
+  {
+    "note": "Khóa CHỈ ĐỂ TEST, không dùng cho thiết bị thật",
+    "generator": "tools/make_test_vector.py",
+    "privateKey": "0x<32 byte hex>",
+    "device": "0x<địa chỉ, viết thường>",
+    "vectors": [
+      {
+        "name": "fall_basic",
+        "eventType": 1,
+        "timestamp": 2000000000,
+        "nonce": 42,
+        "dataHash": "0x<32 byte>",
+        "samples_b64": "<base64 của mẫu int16 LE; chỉ có ở vector có dữ liệu thô>",
+        "packed": "0x<69 byte>",
+        "messageHash": "0x<32 byte>",
+        "ethSigned": "0x<32 byte>",
+        "sig": "0x<65 byte: r s v>",
+        "v": 28
+      }
+    ]
+  }
+  ```
+- **Luật cho các vector:**
+  1. **Tối thiểu 3 vector** FALL, ARRIVAL, CANCEL (đúng như prompt P5). Nên thêm: một FALL có **nonce > 2^32** (bắt lỗi big-endian `uint64` ghi thiếu byte) và đảm bảo có **cả `v = 27` và `v = 28`** (lỗi xử lý `v` thường chỉ lộ ra ở một nửa số chữ ký).
+  2. **`timestamp` phải ở tương lai**, đề xuất `2000000000` (năm 2033). Lý do: test phải tua giờ Hardhat tới đúng `ts` để gọi `reportFall`, mà Hardhat chỉ tua tới được chứ không lùi về quá khứ. Ví dụ `1760000000` trong AGENTS.md (năm 2025) là quá khứ, contract sẽ báo `"ts too old"`.
+  3. `nonce >= 1`. ARRIVAL phải có `nonce` **lớn hơn** và `timestamp` **không sớm hơn** một vector FALL, để test gọi được FALL rồi ARRIVAL theo thứ tự.
+  4. CANCEL có `dataHash = 0x00…00`. Vector FALL có `samples_b64` thì `dataHash = keccak256(bytes thô)`.
+  5. Mọi chuỗi hex viết thường, có tiền tố `0x`. Chữ ký phải là **low-s** (`s <= N/2`), vì OpenZeppelin `ECDSA.recover` từ chối `s` cao. `eth_account` tự làm điều này. **P3 phải kiểm tra thư viện ký trên ESP32** (⚠️ chưa kiểm chứng `trezor-crypto` có tự chuẩn hóa không; test sẽ báo nếu sai).
+- **Đối chiếu chéo:** P1 đã có file mẫu `contracts/p1_tmp/sample_test_vectors.json`, sinh bằng ethers (JS) với khóa test `keccak256("carensla test key - DO NOT USE")`. Chữ ký ECDSA ở Ethereum là tất định (RFC 6979). Nên nếu P5 dùng **cùng khóa và cùng input**, file Python của P5 phải ra **từng byte giống hệt** file mẫu. Đây là cách kiểm tra chéo rẻ nhất giữa hai cách cài đặt độc lập.
+- **Kiểm tra file:** `cd contracts && npx hardhat test test/signature.vector.test.js`. Test kiểm từng tầng: `packed` → `messageHash` (so với `hashEvent()` của contract) → `ethSigned` → `sig` (low-s, khôi phục ra đúng device) → contract chấp nhận `reportFall` / `confirmArrival` → sửa 1 byte thì bị từ chối.
+- **Quyết định:** …
