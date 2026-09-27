@@ -1,0 +1,8 @@
+# CareSLA Gateway — Python dependencies
+# Cài: pip install -r requirements.txt
+
+web3>=7.0.0,<8
+eth-account>=0.13.0,<1
+paho-mqtt>=2.0.0,<3
+requests>=2.31.0,<3
+python-dotenv>=1.0.0,<2
