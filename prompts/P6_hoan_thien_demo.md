@@ -50,7 +50,7 @@ Chỉ mở file code khi làm đúng việc liên quan. **Không** đọc `model
 
 | # | Việc | File |
 |---|---|---|
-| B1 | Deploy + verify Sepolia (`npm run deploy:sepolia`, `npx hardhat verify`), sinh `deployments/sepolia.json`, `setup:sepolia` theo README. ⚠️ Cần ví testnet có ETH do người dùng cung cấp qua `.env`/`.keys/` | P2 |
+| B1 | Deploy + verify Sepolia, sinh `deployments/sepolia.json`, `setup:sepolia`. **Làm theo mục 5** (người dùng tự chuẩn bị ví, agent chỉ kiểm tra địa chỉ + số dư) | P2 |
 | B2 | Chạy gateway, keeper, dashboard với `NETWORK=sepolia`; dashboard có link Etherscan **cho từng giao dịch** (dùng `transactionHash` từ `queryFilter`) | P5 |
 | B3 | Flash sang 4 MB + partition "Single factory app (large)" nếu `esptool.py flash_id` báo chip ≥ 4 MB | P3 |
 | B4 | AI trên ESP32: bật `AI_RUN_GOLDEN_TESTS=1`, so golden. Không khớp trước H14 → viết `ai_model/infer.py` (đọc `.tflite`, tiền xử lý đúng `ai_input_spec.md`) và nối vào gateway theo placeholder có sẵn, ghi rõ là **phương án dự phòng** | P3, P4 |
@@ -75,7 +75,36 @@ Mỗi dòng một terminal, đứng ở gốc repo, Node 22, Python venv đã c�
 
 Kịch bản demo (mỗi lần chạy): FALL → Telegram ngay → dashboard đếm ngược → để quá hạn → keeper chuyển cấp 1 (Telegram backup) → cấp 2 (Telegram gia đình) → ARRIVAL → status Arrived → plan ngắn qua `periodEnd + 600` → `settle` → số dư family/provider đúng. Thêm 1 lần CANCEL (không lên chain) và 1 lần tắt RPC giữa chừng (Telegram vẫn đến, giao dịch gửi lại sau).
 
-## 5. Cuối mỗi phiên
+## 5. Chuẩn bị ví Sepolia (trước việc B1)
+
+Agent **không tự tạo ví, không nhập, đọc hay in khóa riêng**. Hướng dẫn người dùng tự làm trên máy họ theo các bước dưới, rồi chỉ kiểm tra bằng **địa chỉ** và số dư.
+
+**Cần 7 ví khác nhau** (setup báo lỗi nếu family/provider/primary/backup trùng):
+
+| Vai trò | Nơi đặt khóa | Nạp gợi ý (Sepolia ETH) |
+|---|---|---|
+| Deployer | `.env` `DEPLOYER_PRIVATE_KEY` | 0,03 |
+| Family (ký quỹ 0,01 ETH mỗi plan, demo có 2 plan) | `.keys/family.key` | 0,04 |
+| Provider | `.keys/provider.key` | 0,01 |
+| Gateway | `.env` `GATEWAY_PRIVATE_KEY` | 0,02 |
+| Keeper | `.env` `KEEPER_PRIVATE_KEY` | 0,02 |
+| Primary, Backup | chỉ trong MetaMask; setup nhận **địa chỉ** | 0,005 mỗi ví |
+| Thiết bị | `secrets.h` / file ngoài Git (`python tools/gen_device_key.py`) | 0 (chỉ ký, không gửi tx) |
+
+Tổng ~0,15 ETH. ⚠️ Số nạp là ước lượng (deploy local đo 1.814.059 gas; giá gas Sepolia thay đổi).
+
+**Các bước người dùng làm:**
+1. MetaMask **riêng cho testnet** (profile trình duyệt riêng, không phải ví có tiền thật). Settings → Advanced → Show test networks → chọn **Sepolia**. Tạo 7 account.
+2. Xin ETH từ faucet vào ví Deployer, rồi Send sang các ví còn lại. ⚠️ Điều kiện faucet hay đổi: Google Cloud Web3 Faucet (đăng nhập Google), Sepolia PoW Faucet `sepolia-faucet.pk910.de` (đào vài phút trong trình duyệt), Alchemy/Infura (thường đòi ví có ETH mainnet). Mỗi thành viên xin một lần rồi gom lại.
+3. RPC: tạo app Sepolia miễn phí trên Alchemy hoặc Infura → `SEPOLIA_RPC_URL`. Etherscan: tạo API key → `ETHERSCAN_API_KEY`.
+4. Điền `.env` ở gốc repo (`NETWORK=sepolia`, 3 khóa, RPC, Etherscan). `mkdir -p .keys && chmod 700 .keys`, dán khóa family/provider vào 2 file, mỗi file một dòng. Không dán khóa vào chat.
+
+**Agent kiểm tra (không in khóa):**
+- `git status` không thấy `.env`, `.keys/` (đã gitignore); `git check-ignore .env .keys/family.key` phải in ra cả hai.
+- Đọc số dư theo **địa chỉ** (ví dụ `npx hardhat console --network sepolia` → `ethers.provider.getBalance("0x...")`), đủ mức trong bảng mới chạy B1.
+- B1: `npm run deploy:sepolia` → `npx hardhat verify --network sepolia <địa chỉ>` → `npm run setup:sepolia -- --device 0x<thiết bị> --family-key-file ../.keys/family.key --provider-key-file ../.keys/provider.key --primary 0x<primary> --backup 0x<backup>` → chép `PLAN_ID` vào `.env`. Lưu link Etherscan thật vào `docs/progress/P6.md`.
+
+## 6. Cuối mỗi phiên
 
 - Cập nhật `docs/progress/P6.md`: việc nào xong (kèm lệnh đã chạy + kết quả), việc nào dở, lỗi còn lại, việc tiếp theo, file của ai đã sửa.
 - Chạy lại `cd contracts && npx hardhat test` (phải 66 passing) trước khi báo P1.
