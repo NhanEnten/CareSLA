@@ -7,6 +7,14 @@
 
 ---
 
+## [2026-09-27, lần 4] Review `p5-backend` (commit `7884436`): CHƯA MERGE
+- **P5 đọc ngay `docs/review/P5_review_2026-09-27.md`.** P1 đã chạy thật gateway với Hardhat node local: luồng FALL → `reportFall` và ARRIVAL → `confirmArrival` **chạy đúng**, nhưng còn 3 lỗi 🔴:
+  1. Theo dõi `Escalated` dùng `fromBlock`/`toBlock`, web3 v7 không nhận → **không bao giờ gửi Telegram chuyển cấp** (lỗi bị `except: pass` che).
+  2. RPC lỗi tạm thời → **FALL bị bỏ, không thử lại** (vi phạm AGENTS.md mục 3).
+  3. Gói MQTT thiếu trường → lỗi thoát khỏi callback → **paho 2.1 làm sập gateway**.
+- Thêm 🟠: ARRIVAL không có FALL trên chain bị lặp mãi trong hàng đợi; dashboard chạy theo README (`--directory dashboard`) bị 404 file `deployments/localhost.json`, **không kết nối được**.
+- Hướng sửa và tiêu chí merge nằm trong file review. P5 sửa xong, đẩy lên `p5-backend`, báo P1 kiểm tra lại.
+
 ## [2026-09-27, lần 3] Đã merge `p2-test` vào `main`
 - **Có gì mới:** test nghiệp vụ của P2 (38 test), `scripts/deploy.js`, `demo_setup` (có hợp đồng kỳ ngắn `--short-plan`), `backend/keeper.py`, ABI trong `backend/abi/` và `dashboard/`, README, báo cáo P2. Chạy lệnh theo README.
 - **P1 đã kiểm tra trước khi merge:** không động file của P1/P5; không lộ khóa; giữ cấu hình compiler IC-10 và tên biến IC-15; ABI khớp 100% contract. Kết quả tự chạy lại: **66/66 test JS** (gồm 24 test chữ ký) và **20/20 unit test keeper**.
