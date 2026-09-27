@@ -7,6 +7,14 @@
 
 ---
 
+## [2026-09-27, lần 3] Đã merge `p2-test` vào `main`
+- **Có gì mới:** test nghiệp vụ của P2 (38 test), `scripts/deploy.js`, `demo_setup` (có hợp đồng kỳ ngắn `--short-plan`), `backend/keeper.py`, ABI trong `backend/abi/` và `dashboard/`, README, báo cáo P2. Chạy lệnh theo README.
+- **P1 đã kiểm tra trước khi merge:** không động file của P1/P5; không lộ khóa; giữ cấu hình compiler IC-10 và tên biến IC-15; ABI khớp 100% contract. Kết quả tự chạy lại: **66/66 test JS** (gồm 24 test chữ ký) và **20/20 unit test keeper**.
+- **Mọi người sau khi `git pull`:** chạy `cd contracts && npm ci`, vì `hardhat-toolbox` đã lên 6.1.0 (vẫn là Hardhat 2).
+- ⚠️ **Node:** `package.json` yêu cầu Node ≥ 22, và bộ máy Hardhat (`edr`) cần Node ≥ 20. Node 18 vẫn chạy được nhưng có cảnh báo. **Nên cài Node 22 LTS** để tránh lỗi khó hiểu lúc demo.
+- **P5:** ABI đã có sẵn ở `backend/abi/CareSLA.json` và `dashboard/CareSLA.json`, địa chỉ local ở `deployments/localhost.json` (tạm, restart node thì deploy lại).
+- **Còn thiếu để đạt Mốc 2:** keeper gửi giao dịch thật trên node local; gateway gọi contract (P5); firmware (P3); `docs/ai_input_spec.md` (P4); chạy E2E 3 lần.
+
 ## [2026-09-27, lần 2] ✅ ĐÃ CHỐT IC-01 → IC-14, AGENTS.md đã cập nhật
 - Trưởng nhóm chốt **toàn bộ IC-01 → IC-14 theo đề xuất** (IC-15 đã chốt trước đó). Contract hiện tại **chính là** bản đã chốt, không có gì phải sửa thêm.
 - **AGENTS.md đã được cập nhật** cho khớp code (đã đối chiếu tự động với ABI): mục 5 (phiên bản + cấu hình compiler), 6.2 (nonce chung, low-s, test vector), 6.3 (chữ ký hàm đầy đủ, `getFallEvent`, `lastNonce(planId)`, luật `settle` mới, mọi luật chi tiết), 6.5 (tên biến môi trường).
