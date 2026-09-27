@@ -7,6 +7,12 @@
 
 ---
 
+## [2026-09-27, lần 10] P6 — người hoàn thiện code để chạy demo
+- Trưởng nhóm giao **P6** làm hết phần code còn thiếu. Prompt: **`prompts/P6_hoan_thien_demo.md`** (thứ tự đọc, quyền hạn, việc A1–A11 / B1–B4 / C, tiêu chí xong, quy trình chạy demo). AGENTS.md mục 7 đã ghi quyền của P6.
+- P6 làm trên nhánh `p6-finish`, được sửa file của P2–P5 **chỉ cho các việc trong prompt**, mỗi lần sửa ghi vào `docs/progress/P6.md`. Không đổi giao diện mục 6.
+- **Nhóm A (chặn Mốc 2):** `secrets.h.example`, `DETECTOR_MODE`, nút BOOT tạm, tắt `stream`, buffer MQTT, gateway so hash khi nhận `raw`, chống spam heartbeat, sửa README dashboard, keeper gửi tx thật, `tools/fake_device.py` (ESP32 giả làm phương án dự phòng), chạy E2E 3 lần.
+- **P2–P5:** vẫn làm tiếp phần của mình, nhưng **báo P6 trước** khi sửa các file có trong danh sách việc của P6 để tránh xung đột. Ai đang sửa dở việc nào trong danh sách thì nhắn P1 để gạch khỏi phần P6.
+
 ## [2026-09-27, lần 9] ✅ Đã merge `p3-iot` (commit `e18d40b`) — lỗi review CHƯA sửa
 - Trưởng nhóm quyết định merge sớm để cả nhóm có firmware trên `main`. **3 lỗi 🔴 trong `docs/review/P3_review_2026-09-27.md` vẫn còn**: thiếu `main/secrets.h.example` (clone về build lỗi), chưa có nút vật lý (không có ARRIVAL), AI lệch golden mà chưa có `DETECTOR_MODE`.
 - **P3:** từ giờ làm tiếp trên `p3-iot` sau khi `git pull origin main`, sửa theo mục 3 file review, chạy mục 4, báo P1.
