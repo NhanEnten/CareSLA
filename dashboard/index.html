@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareSLA Dashboard</title>
+    <!-- Use Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="glass-container main-wrapper">
+        <header>
+            <div class="header-left">
+                <h1>CareSLA <span>Monitor</span></h1>
+                <p class="subtitle">Hệ thống giám sát té ngã tích hợp Blockchain</p>
+            </div>
+            <div class="header-right">
+                <div id="network-badge" class="badge default">Disconnected</div>
+                <button id="connect-btn" class="btn primary-btn">Connect MetaMask</button>
+            </div>
+        </header>
+
+        <section id="metrics-section" class="metrics-grid" style="display: none;">
+            <div class="metric-card glass">
+                <h3>Độ trễ Telegram (TB)</h3>
+                <p id="metric-avg-lat">-- ms</p>
+            </div>
+            <div class="metric-card glass">
+                <h3>Độ trễ Telegram (Max)</h3>
+                <p id="metric-max-lat">-- ms</p>
+            </div>
+            <div class="metric-card glass">
+                <h3>Báo động giả</h3>
+                <p id="metric-false-alarms">--</p>
+            </div>
+            <div class="metric-card glass">
+                <h3>Heartbeat</h3>
+                <p id="metric-heartbeats">-- thiết bị</p>
+            </div>
+        </section>
+
+        <section id="plan-section" class="plan-info glass">
+            <h2>Thông tin Hợp đồng (Plan ID: <span id="display-plan-id">1</span>)</h2>
+            <div class="info-grid">
+                <div><strong>Ký quỹ:</strong> <span id="plan-deposit">-- ETH</span></div>
+                <div><strong>Số vi phạm:</strong> <span id="plan-violations" class="highlight-err">--</span></div>
+                <div><strong>Sự cố đang chờ (Pending):</strong> <span id="plan-pending">--</span></div>
+                <div><strong>Trạng thái hợp đồng:</strong> <span id="plan-status">--</span></div>
+            </div>
+            <div class="action-row">
+                <button id="settle-btn" class="btn danger-btn" disabled>Thanh lý Hợp đồng (Settle)</button>
+                <small id="settle-hint" class="hint">Chỉ khả dụng sau periodEnd + 600s và khi không còn pending events.</small>
+            </div>
+        </section>
+
+        <section id="events-section" class="events-list">
+            <div class="section-title">
+                <h2>Danh sách sự cố</h2>
+                <div class="pulse-indicator">
+                    <span class="pulse"></span> Cập nhật tự động 4s
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="events-table">
+                    <thead>
+                        <tr>
+                            <th>Mã sự cố</th>
+                            <th>Trạng thái</th>
+                            <th>Đang giao cho</th>
+                            <th>Đếm ngược SLA</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="5" class="text-center loading-text">Hãy kết nối MetaMask để tải dữ liệu...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- Ethers v6 CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
