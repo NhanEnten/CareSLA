@@ -7,6 +7,13 @@
 
 ---
 
+## [2026-09-27, lần 5] ✅ Đã merge `p5-backend` (commit `b307696`)
+- **Có gì mới:** gateway gửi `reportFall`/`confirmArrival` qua hàng đợi có thử lại, theo dõi `Escalated` để báo Telegram cấp 1/2, dashboard (`dashboard/`), tài liệu ôn của P5. Mọi người `git pull`.
+- **P1 đã chạy lại thật** 6 tiêu chí trong `docs/review/P5_review_2026-09-27.md` mục 4: **đạt cả 6** (chuyển cấp có báo, RPC lỗi 10 s vẫn gửi lại đúng thứ tự, gói rác không làm sập gateway, ARRIVAL mồ côi bỏ 1 lần).
+- **Chạy dashboard:** đứng ở **gốc repo** `python -m http.server 8000`, mở `http://127.0.0.1:8000/dashboard/` (hợp đồng kỳ ngắn: `?plan=2`).
+- **P5 còn việc (không chặn merge, sửa trước Mốc 2):** lỗi 10–13 ở mục 5 file review. Quan trọng nhất: **revert lạ làm kẹt cả hàng đợi** và gateway nhận chữ ký high-s mà contract từ chối.
+- **P3 lưu ý:** chữ ký ESP32 **bắt buộc low-s** (IC-14). Hiện một chữ ký high-s sẽ làm gateway kẹt hàng đợi cho tới khi P5 sửa lỗi 10–11.
+
 ## [2026-09-27, lần 4] Review `p5-backend` (commit `7884436`): CHƯA MERGE
 - **P5 đọc ngay `docs/review/P5_review_2026-09-27.md`.** P1 đã chạy thật gateway với Hardhat node local: luồng FALL → `reportFall` và ARRIVAL → `confirmArrival` **chạy đúng**, nhưng còn 3 lỗi 🔴:
   1. Theo dõi `Escalated` dùng `fromBlock`/`toBlock`, web3 v7 không nhận → **không bao giờ gửi Telegram chuyển cấp** (lỗi bị `except: pass` che).
