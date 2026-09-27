@@ -1,0 +1,43 @@
+diff --git a/tensorflow/lite/micro/kernels/space_to_batch_nd.cc b/tensorflow/lite/micro/kernels/space_to_batch_nd.cc
+index f8df149..bcf5748 100644
+--- a/tensorflow/lite/micro/kernels/space_to_batch_nd.cc
++++ b/tensorflow/lite/micro/kernels/space_to_batch_nd.cc
+@@ -65,0 +66,6 @@ TfLiteStatus SpaceToBatchNDPrepare(TfLiteContext* context, TfLiteNode* node) {
++  // CareSLA: padding phai bieu dien so 0 that trong mien luong tu INT8.
++  // AllocatePersistentBuffer khong khoi tao SpaceToBatchParams.
++  TF_LITE_ENSURE(context, node->user_data != nullptr);
++  auto* params = static_cast<SpaceToBatchParams*>(node->user_data);
++  params->output_offset =
++      input->type == kTfLiteInt8 ? output->params.zero_point : 0;
+diff --git a/tensorflow/lite/micro/micro_interpreter_graph.cc b/tensorflow/lite/micro/micro_interpreter_graph.cc
+index f0bcb60..b9e2fea 100644
+--- a/tensorflow/lite/micro/micro_interpreter_graph.cc
++++ b/tensorflow/lite/micro/micro_interpreter_graph.cc
+@@ -245,0 +246,4 @@ TfLiteStatus MicroInterpreterGraph::InvokeSubgraph(int subgraph_idx) {
++  // CareSLA: chi trace lan Invoke dau (golden dau tien), khong spam luc giam sat.
++  static bool trace_pending = false;  // Tat trace khi thu du lieu cam bien that.
++  const bool trace_this_call = trace_pending && subgraph_idx == 0;
++  if (trace_this_call) trace_pending = false;
+@@ -277,0 +282,22 @@
++    if (trace_this_call && invoke_status == kTfLiteOk) {
++      for (int oi = 0; oi < node->outputs->size; ++oi) {
++        const int tensor_index = node->outputs->data[oi];
++        if (tensor_index < 0) continue;
++        const TfLiteEvalTensor& t = subgraph_allocations_[subgraph_idx].tensors[tensor_index];
++        if (t.type != kTfLiteInt8) continue;
++        int count = 1;
++        for (int d = 0; d < t.dims->size; ++d) count *= t.dims->data[d];
++        int sum = 0, minimum = 127, maximum = -128;
++        uint32_t hash = 2166136261u;
++        for (int k = 0; k < count; ++k) {
++          const int value = t.data.int8[k];
++          sum += value;
++          if (value < minimum) minimum = value;
++          if (value > maximum) maximum = value;
++          hash = (hash ^ static_cast<uint8_t>(value)) * 16777619u;
++        }
++        MicroPrintf("AI_TRACE op=%d tensor=%d n=%d sum=%d min=%d max=%d hash=%08x",
++                    static_cast<int>(current_operator_index_), tensor_index, count,
++                    sum, minimum, maximum, static_cast<unsigned>(hash));
++      }
++    }
