@@ -1,0 +1,7 @@
+# Thư mục tải tạm; component đã dùng bản nguồn ghim trong components/trezor_crypto/src.
+/vendor_download/
+/components/trezor_crypto/upstream/
+/build/
+/dependencies.lock
+/sdkconfig.old
+/main/secrets.h

@@ -1,0 +1,6 @@
+[submodule "iot_code/components/esp-nn"]
+	path = iot_code/components/esp-nn
+	url = https://github.com/espressif/esp-nn.git
+[submodule "iot_code/components/esp-tflite-micro"]
+	path = iot_code/components/esp-tflite-micro
+	url = https://github.com/espressif/esp-tflite-micro.git
