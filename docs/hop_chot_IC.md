@@ -1,5 +1,6 @@
 # Họp chốt giao diện — 4 mục ảnh hưởng nhiều người
 
+> ✅ **ĐÃ CHỐT toàn bộ IC-01 → IC-14 theo đề xuất ngày 2026-09-27; AGENTS.md đã cập nhật.** Mục 6 bên dưới là việc cần làm của từng người.
 > Người chủ trì: P1 · Thời lượng: **20 phút** · Tài liệu gốc: `docs/interface_changes.md`
 > Cách họp: mỗi mục 4–5 phút. P1 đọc phần "Nói gọn". Người bị ảnh hưởng trả lời các câu hỏi. Chốt phương án và ghi vào ô **Quyết định**.
 > 9 mục còn lại (IC-01 → IC-06, IC-08, IC-11, IC-13) chỉ cần cả nhóm gật đầu ở cuối buổi (xem mục 5).
@@ -34,7 +35,7 @@ Nếu gateway gửi ARRIVAL(45) trước FALL(44) → FALL(44) bị từ chối 
 2. P5: gateway có chờ receipt của từng giao dịch trước khi gửi giao dịch tiếp theo không?
 3. P5: đồng ý cách ghép ARRIVAL → `eventId` ở trên không?
 
-**Quyết định:** P1 chọn phương án đề xuất. Chờ nhóm xác nhận.
+**Quyết định:** ĐÃ CHỐT theo đề xuất (2026-09-27).
 
 ---
 
@@ -52,7 +53,7 @@ Nếu gateway gửi ARRIVAL(45) trước FALL(44) → FALL(44) bị từ chối 
 
 **Câu hỏi:** P2, P5 có phản đối đổi tên không?
 
-**Quyết định:** P1 chọn **A** — đã đổi tên thành `getFallEvent` trong contract. Chờ nhóm xác nhận.
+**Quyết định:** ĐÃ CHỐT theo đề xuất (2026-09-27).
 
 ---
 
@@ -74,7 +75,7 @@ solidity: {
 
 **Câu hỏi:** P2 thấy ổn không? Máy P2 dùng Node bản mấy? Hardhat cảnh báo Node 18, nên dùng Node 20 hoặc 22.
 
-**Quyết định:** …
+**Quyết định:** ĐÃ CHỐT theo đề xuất (2026-09-27).
 
 ---
 
@@ -103,7 +104,7 @@ Ngoài ra, `reportFall` từ chối té ngã có `ts` sau `periodEnd`.
 1. P2: đồng ý phương án demo A không? Có thêm được hợp đồng thứ 2 vào `demo_setup.js` không?
 2. P5: dashboard hiển thị được lý do chưa settle được không, ví dụ "còn 2 sự cố treo"?
 
-**Quyết định:** P1 chọn **A** (code đã có; demo dùng hợp đồng kỳ ngắn tạo trước). Chờ nhóm xác nhận.
+**Quyết định:** ĐÃ CHỐT theo đề xuất (2026-09-27).
 
 ---
 
@@ -111,15 +112,15 @@ Ngoài ra, `reportFall` từ chối té ngã có `ts` sau `periodEnd`.
 
 | Mã | Nội dung | Đồng ý? |
 |---|---|---|
-| IC-01 | Thứ tự giá trị trả về của `getPlan` (12 giá trị) / `getFallEvent` (12 giá trị); ID bắt đầu từ 1 | ☐ |
-| IC-02 | Được xác nhận có mặt khi chưa bấm nhận | ☐ |
-| IC-03 | SLA chỉ tính tới lúc nhận (ghi vào báo cáo là giới hạn) | ☐ |
-| IC-04 | Cấp 2: `newDeadline = 0`, sau đó `checkTimeout` báo `"max level"` | ☐ |
-| IC-05 | Hợp đồng chưa được chấp nhận thì `settle` hoàn toàn bộ tiền cho gia đình | ☐ |
-| IC-06 | Cấm ca chồng giờ; primary ≠ backup | ☐ |
-| IC-08 | Bấm nhận trễ vẫn bị ghi vi phạm | ☐ |
-| IC-11 | Nonce tính theo hợp đồng (vá lỗ hổng hợp đồng bù nhìn) | ☐ |
-| IC-13 | Chuyển tiền kiểu "đẩy": ghi vào báo cáo là giới hạn | ☐ |
+| IC-01 | Thứ tự giá trị trả về của `getPlan` (12 giá trị) / `getFallEvent` (12 giá trị); ID bắt đầu từ 1 | ✅ |
+| IC-02 | Được xác nhận có mặt khi chưa bấm nhận | ✅ |
+| IC-03 | SLA chỉ tính tới lúc nhận (ghi vào báo cáo là giới hạn) | ✅ |
+| IC-04 | Cấp 2: `newDeadline = 0`, sau đó `checkTimeout` báo `"max level"` | ✅ |
+| IC-05 | Hợp đồng chưa được chấp nhận thì `settle` hoàn toàn bộ tiền cho gia đình | ✅ |
+| IC-06 | Cấm ca chồng giờ; primary ≠ backup | ✅ |
+| IC-08 | Bấm nhận trễ vẫn bị ghi vi phạm | ✅ |
+| IC-11 | Nonce tính theo hợp đồng (vá lỗ hổng hợp đồng bù nhìn) | ✅ |
+| IC-13 | Chuyển tiền kiểu "đẩy": ghi vào báo cáo là giới hạn | ✅ |
 
 ## 6. Gợi ý sửa cụ thể (áp dụng **sau khi** chốt theo phương án đề xuất)
 

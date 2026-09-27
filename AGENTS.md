@@ -64,7 +64,7 @@ IDLE → phát hiện va chạm (AI) → kiểm tra bất động N giây → **
 
 | Tầng | Công nghệ | Ghi chú |
 |---|---|---|
-| Contract | Solidity `^0.8.24`, **Hardhat 2.x** (không dùng Hardhat 3), `@nomicfoundation/hardhat-toolbox` bản tương thích Hardhat 2, **ethers v6**, **OpenZeppelin Contracts 5.x** | ⚠️ `npm` có thể cài Hardhat 3 mặc định, phải ghim `hardhat@^2` |
+| Contract | Solidity `^0.8.24`, **Hardhat 2.x** (không dùng Hardhat 3), `@nomicfoundation/hardhat-toolbox` bản tương thích Hardhat 2, **ethers v6**, **OpenZeppelin Contracts 5.x**. Bản đang dùng: `hardhat@2.29.1`, `hardhat-toolbox@5.0.0`, `ethers@6.17.0`, `@openzeppelin/contracts@5.6.1` | ⚠️ `npm` có thể cài Hardhat 3 mặc định, phải ghim `hardhat@^2`. **Compiler bắt buộc (IC-10):** `version: "0.8.24"`, `optimizer: { enabled: true, runs: 200 }`, `viaIR: true`, `evmVersion: "cancun"`; verify Etherscan cũng dùng đúng thiết lập này. Nên dùng Node 20/22 |
 | Mạng | Hardhat local (chainId 31337) và **Sepolia** (chainId 11155111) | |
 | Backend | Python 3.10+, `web3` (v7), `eth-account`, `paho-mqtt` 2.x, `requests`, `python-dotenv`, SQLite | paho-mqtt 2.x bắt buộc khai báo `CallbackAPIVersion.VERSION2` |
 | Broker | Mosquitto chạy trên laptop demo | |
@@ -114,8 +114,10 @@ ethSigned   = keccak256("\x19Ethereum Signed Message:\n32" || messageHash)   // 
 sig         = secp256k1_sign(ethSigned) → r || s || v   (v = recoveryId + 27)
 ```
 - `dataHash` của FALL và ARRIVAL = `keccak256(bytes thô của samples)`. Với CANCEL, `dataHash = 0x00…00`.
-- `nonce` của mỗi thiết bị **tăng dần, lưu trong NVS**, không được dùng lại kể cả sau khi khởi động lại.
-- **Bộ test vector chuẩn:** `docs/test_vectors.json`, do P5 tạo bằng `tools/make_test_vector.py` với một khóa **chỉ dùng để test**. ESP32, gateway và contract đều phải cho ra cùng `messageHash`, `ethSigned`, `sig` với bộ này.
+- `nonce` của mỗi thiết bị **tăng dần, lưu trong NVS** (tăng và lưu **trước** khi gửi), không được dùng lại kể cả sau khi khởi động lại. **FALL, ARRIVAL và CANCEL dùng chung một bộ đếm**; CANCEL cũng tiêu một nonce nên nonce trên chain có thể nhảy số, điều này hợp lệ (IC-07).
+- Chữ ký phải là **low-s** (`s ≤ N/2` của secp256k1). OpenZeppelin `ECDSA.recover` từ chối `s` cao (IC-14).
+- `ts` chỉ được lệch **−600 / +60 giây** so với giờ chain, nên ESP32 phải đồng bộ SNTP xong mới gửi sự kiện.
+- **Bộ test vector chuẩn:** `docs/test_vectors.json`, do P5 tạo bằng `tools/make_test_vector.py` với một khóa **chỉ dùng để test**. ESP32, gateway và contract đều phải cho ra cùng `packed`, `messageHash`, `ethSigned`, `sig` với bộ này. Định dạng file: `docs/interface_changes.md` IC-14 (`timestamp` ở tương lai, ví dụ `2000000000`; có cả `v = 27` và `v = 28`). Kiểm tra: `cd contracts && npx hardhat test test/signature.vector.test.js`.
 
 ### 6.3 Smart contract `CareSLA.sol`
 
@@ -125,22 +127,35 @@ function createCarePlan(address provider, address device, uint64 slaSeconds, uin
     external payable returns (uint256 planId);                 // gia đình gọi, msg.value = tiền ký quỹ
 function acceptPlan(uint256 planId) external;                  // chỉ provider
 function commitShift(uint256 planId, uint64 start, uint64 end, address primary, address backup) external;
-                                                               // chỉ provider; bắt buộc start > block.timestamp; tối đa 20 ca/hợp đồng
+                                                               // chỉ provider; start > block.timestamp; tối đa 20 ca; không chồng giờ; primary ≠ backup
 function reportFall(uint256 planId, uint64 ts, uint64 nonce, bytes32 dataHash, bytes calldata sig)
     external returns (uint256 eventId);                        // ai gọi cũng được; hợp lệ nhờ chữ ký thiết bị
-function acknowledge(uint256 eventId) external;                // primary hoặc backup của ca chứa ts
+function acknowledge(uint256 eventId) external;                // primary hoặc backup đã chụp lại lúc reportFall
 function confirmArrival(uint256 eventId, uint64 ts, uint64 nonce, bytes32 dataHash, bytes calldata sig) external;
-                                                               // chữ ký thiết bị, eventType = 2
+                                                               // chữ ký thiết bị, eventType = 2; được gọi cả khi chưa acknowledge
 function checkTimeout(uint256 eventId) external;               // ai gọi cũng được (keeper, gia đình...)
-function settle(uint256 planId) external;                      // sau periodEnd, ai gọi cũng được, chỉ một lần
+function settle(uint256 planId) external;                      // sau periodEnd + 600 s, không còn sự cố treo; ai gọi cũng được, chỉ một lần
 
 // ---- Đọc ----
 function hashEvent(address device, uint8 eventType, uint64 ts, uint64 nonce, bytes32 dataHash)
     external pure returns (bytes32);                           // trả về messageHash, dùng để đối chiếu khi debug
-function getPlan(uint256 planId) external view returns (...);
-function getEvent(uint256 eventId) external view returns (...);
-function getOnDuty(uint256 planId, uint64 ts) external view returns (address primary, address backup);
+function getPlan(uint256 planId) external view returns (
+    address family, address provider, address device,
+    uint64 slaSeconds, uint256 penaltyWei, uint64 periodEnd,
+    uint256 deposit, bool accepted, bool settled,
+    uint256 violations, uint256 shiftCount, uint256 pendingEvents);
+function getFallEvent(uint256 eventId) external view returns (  // KHÔNG đặt tên getEvent: trùng Contract.getEvent của ethers v6 (IC-09)
+    uint256 planId, uint64 ts, bytes32 dataHash,
+    address primary, address backup,
+    uint64 reportedAt, uint64 deadline, uint8 level, uint8 status,
+    address ackBy, uint64 ackAt, uint64 arrivedAt);
+    // status: 0 = Open, 1 = Acknowledged, 2 = Arrived. level: 0 = primary, 1 = backup, 2 = đã báo gia đình.
+    // Trường thời gian chưa xảy ra = 0.
+function getOnDuty(uint256 planId, uint64 ts) external view returns (address primary, address backup); // không có ca → (0x0, 0x0)
 function eventCount() external view returns (uint256);
+function planCount() external view returns (uint256);
+function lastNonce(uint256 planId) external view returns (uint64);  // nonce theo planId, KHÔNG theo thiết bị (IC-11)
+// planId và eventId bắt đầu từ 1; giá trị 0 nghĩa là "không tồn tại".
 
 // ---- Event ----
 event PlanCreated(uint256 indexed planId, address indexed family, address indexed provider, address device, uint256 deposit);
@@ -154,14 +169,22 @@ event Arrived(uint256 indexed eventId, uint64 at);
 event Settled(uint256 indexed planId, uint256 toProvider, uint256 refundFamily);
 ```
 
-**Luật cần cài đặt:**
-- `reportFall`: hợp đồng đã được chấp nhận; chữ ký khôi phục ra đúng `device`; `nonce > lastNonce[device]`; `ts` nằm trong khoảng `[block.timestamp − 600, block.timestamp + 60]`; phải có ca trực chứa `ts`; `deadline = block.timestamp + slaSeconds`; cấp chuyển ban đầu = 0 (primary).
-- `checkTimeout`: chỉ khi sự cố chưa được xác nhận và `block.timestamp > deadline`.
-  - Cấp 0 → cấp 1: ghi vi phạm, chuyển cho backup, đặt hạn mới.
-  - Cấp 1 → cấp 2: ghi vi phạm, `Escalated` tới địa chỉ gia đình, không chuyển tiếp nữa.
-- `acknowledge`: primary hoặc backup đều được gọi ở mọi cấp. Vi phạm đã ghi thì **không bị xóa**.
-- `settle`: `penalty = min(violations × penaltyWei, deposit)`. Trung tâm nhận `deposit − penalty`, gia đình nhận `penalty`. Dùng `ReentrancyGuard` và nguyên tắc checks-effects-interactions, gửi ETH bằng `call`.
-- **Giới hạn đã biết** (ghi vào báo cáo, không sửa): chữ ký không gắn với địa chỉ contract hay chainId, nên về lý thuyết có thể dùng lại chữ ký ở contract khác.
+**Luật cần cài đặt** (đã chốt IC-01 → IC-14, chi tiết và lý do trong `docs/interface_changes.md`):
+- `createCarePlan`: `msg.value > 0`; `provider`, `device` khác 0; `provider ≠ msg.sender`; `slaSeconds > 0`; `penaltyWei ≤ msg.value`; `periodEnd > block.timestamp`.
+- `commitShift`: chỉ provider, hợp đồng đã chấp nhận; `start > block.timestamp`; `end > start`; `end ≤ periodEnd`; không chồng giờ với ca đã có (`[start, end)`); `primary ≠ backup`, cả hai khác 0; tối đa 20 ca (IC-06).
+- `reportFall`: hợp đồng đã được chấp nhận và chưa settle; `ts ≤ periodEnd`; chữ ký khôi phục ra đúng `device`; **`nonce > lastNonce[planId]`** (IC-11); `ts` nằm trong khoảng `[block.timestamp − 600, block.timestamp + 60]`; phải có ca trực chứa `ts`; `deadline = block.timestamp + slaSeconds`; cấp chuyển ban đầu = 0 (primary); `pendingEvents += 1`.
+- `checkTimeout`: chỉ khi sự cố `Open`, `level < 2` và `block.timestamp > deadline`.
+  - Cấp 0 → cấp 1: ghi vi phạm, chuyển cho backup, đặt hạn mới `block.timestamp + slaSeconds`.
+  - Cấp 1 → cấp 2: ghi vi phạm, `Escalated` tới địa chỉ gia đình với `newDeadline = 0`, không chuyển tiếp nữa; sau đó `checkTimeout` revert `"max level"` (IC-04).
+- `acknowledge`: primary hoặc backup đều được gọi ở mọi cấp. Nếu đã quá hạn mà chưa ai gọi `checkTimeout` thì **tự ghi vi phạm trước** rồi mới xác nhận (IC-08). Vi phạm đã ghi thì **không bị xóa**.
+- `confirmArrival`: `eventType = 2`, cùng luật chữ ký, nonce và cửa sổ `ts` như FALL, thêm `ts ≥ ts của FALL`. Được gọi khi sự cố `Open` hoặc `Acknowledged` (IC-02); nếu còn `Open` mà đã quá hạn thì cũng tự ghi vi phạm trước. `arrivedAt = block.timestamp` (IC-07).
+- **Mỗi sự cố tối đa 2 vi phạm.** `pendingEvents` = số sự cố còn `Open` và `level < 2`; giảm khi sự cố được nhận/có mặt hoặc lên cấp 2.
+- `settle`: chỉ khi `block.timestamp > periodEnd + 600` **và** `pendingEvents == 0`, chỉ một lần (IC-12). Hợp đồng chưa được chấp nhận thì hoàn toàn bộ cho gia đình (IC-05). Còn lại `penalty = min(violations × penaltyWei, deposit)`; trung tâm nhận `deposit − penalty`, gia đình nhận `penalty`. Dùng `ReentrancyGuard` và nguyên tắc checks-effects-interactions, gửi ETH bằng `call`.
+- Thông báo lỗi (`require`) và ý nghĩa: bảng trong `docs/team_updates.md` mục 4.
+- **Giới hạn đã biết** (ghi vào báo cáo, không sửa):
+  - Chữ ký không gắn với địa chỉ contract hay chainId, nên về lý thuyết có thể dùng lại chữ ký ở contract khác.
+  - SLA chỉ tính tới lúc `acknowledge`, không tính tới lúc có mặt; on-chain vẫn lưu `ackAt` và `arrivedAt` làm bằng chứng (IC-03).
+  - `settle` chuyển tiền kiểu "đẩy": nếu một bên là contract từ chối nhận ETH thì `settle` bị chặn (IC-13).
 
 ### 6.4 Tham số demo
 
@@ -176,7 +199,8 @@ event Settled(uint256 indexed planId, uint256 toProvider, uint256 refundFamily);
 ### 6.5 File dùng chung do script sinh ra
 - `deployments/<network>.json`: `{ "address", "chainId", "deployBlock" }` (P2 sinh).
 - `backend/abi/CareSLA.json` và `dashboard/CareSLA.json`: ABI (script deploy của P2 tự copy).
-- `.env.example`: danh sách biến môi trường (P2 quản lý).
+- `.env.example`: danh sách biến môi trường (P2 quản lý). Tên đã chốt (IC-15): `NETWORK`, `SEPOLIA_RPC_URL` (localhost cố định `http://127.0.0.1:8545`), `DEPLOYER_PRIVATE_KEY`, `GATEWAY_PRIVATE_KEY`, `KEEPER_PRIVATE_KEY`, `ETHERSCAN_API_KEY`, `CONTRACT_ADDRESS` (tùy chọn), `PLAN_ID`, `MQTT_HOST`, `MQTT_PORT`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_PRIMARY`, `TELEGRAM_CHAT_BACKUP`, `TELEGRAM_CHAT_FAMILY`, `TELEGRAM_CHAT_PROVIDER`, `REGISTERED_DEVICES`.
+- `docs/team_updates.md`: thông báo mới nhất của P1 cho cả nhóm. **Đọc phần trên cùng** sau file này.
 
 ## 7. Cấu trúc repo và quyền sở hữu
 

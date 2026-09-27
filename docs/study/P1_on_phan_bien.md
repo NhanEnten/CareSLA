@@ -1,6 +1,6 @@
 # Ôn phản biện — P1 (Trưởng nhóm & Smart Contract)
 
-> Bản dựa trên `contracts/contracts/CareSLA.sol` phiên 1 (2026-09-26). Contract đang cài theo các phương án **đề xuất** IC-01 → IC-08 trong `docs/interface_changes.md`, chưa được nhóm chốt. Nếu nhóm chốt khác thì cập nhật lại file này.
+> Bản dựa trên `contracts/contracts/CareSLA.sol`. IC-01 → IC-15 trong `docs/interface_changes.md` đã **ĐÃ CHỐT** (2026-09-27) và đã đưa vào AGENTS.md.
 
 ## 1. Tôi đã làm gì
 
@@ -170,7 +170,6 @@ Không. On-chain chỉ có `dataHash` (keccak256 của dữ liệu cảm biến 
 - **Vi phạm chỉ được ghi khi có người gọi** `checkTimeout`, `acknowledge` hoặc `confirmArrival`.
 - **Chữ ký không chứa `planId`:** đã chặn được kiểu cướp nonce (IC-11, nonce theo plan), nhưng một chữ ký thật vẫn có thể được nộp thêm vào hợp đồng bù nhìn. Không gây hại cho hợp đồng thật.
 - **Sự cố gửi lên chain trễ quá 10 phút sau khi hết kỳ sẽ bị mất** (giới hạn của `SETTLE_DELAY` và cửa sổ `ts`).
-- **Các quyết định IC-01 → IC-13 chưa được nhóm chốt.**
 - ⚠️ **Chưa kiểm chứng:** chữ ký ESP32 thật khớp với contract (chờ `docs/test_vectors.json` của P5); số gas (chờ P2).
 
 ## 7. Liên hệ với phần của người khác

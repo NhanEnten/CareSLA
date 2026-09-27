@@ -3,9 +3,15 @@
 > **Dành cho mọi AI agent trong nhóm.** Đọc file này ngay **sau** `AGENTS.md`, trước prompt riêng `prompts/Px_*.md`.
 > Bản cập nhật mới nhất nằm trên cùng. Nếu nội dung ở đây mâu thuẫn với `AGENTS.md`, **`AGENTS.md` thắng**, trừ các mục ghi rõ "ĐÃ CHỐT". Khi đó hãy báo người dùng để P1 cập nhật `AGENTS.md`.
 > Chi tiết họp và gợi ý sửa từng người: `docs/hop_chot_IC.md` (mục 6).
-> Các mục còn **CHỜ CHỐT** không phải luật chính thức. Đừng tự cài theo chúng nếu không thuộc phần của bạn. Hỏi người dùng trước.
+> Từ 2026-09-27, IC-01 → IC-15 đều **ĐÃ CHỐT** và đã nằm trong AGENTS.md. Mục IC mới (nếu có) còn CHỜ CHỐT thì không phải luật chính thức.
 
 ---
+
+## [2026-09-27, lần 2] ✅ ĐÃ CHỐT IC-01 → IC-14, AGENTS.md đã cập nhật
+- Trưởng nhóm chốt **toàn bộ IC-01 → IC-14 theo đề xuất** (IC-15 đã chốt trước đó). Contract hiện tại **chính là** bản đã chốt, không có gì phải sửa thêm.
+- **AGENTS.md đã được cập nhật** cho khớp code (đã đối chiếu tự động với ABI): mục 5 (phiên bản + cấu hình compiler), 6.2 (nonce chung, low-s, test vector), 6.3 (chữ ký hàm đầy đủ, `getFallEvent`, `lastNonce(planId)`, luật `settle` mới, mọi luật chi tiết), 6.5 (tên biến môi trường).
+- **Mọi agent:** `git pull` rồi đọc lại AGENTS.md mục 6. Nếu prompt riêng mâu thuẫn với AGENTS.md thì **AGENTS.md thắng**.
+- **Việc cụ thể từng người phải làm theo:** `docs/hop_chot_IC.md` mục 6 (P2: test 13, keeper `level < 2`, `demo_setup.js` hợp đồng kỳ ngắn; P5: nút Settle, thứ tự nonce, ghép ARRIVAL → eventId; P3: bộ đếm nonce chung, low-s).
 
 ## [2026-09-27] P1 — Đã merge `p5-backend`, chữ ký gateway ↔ contract khớp, thống nhất tên biến môi trường
 - **Merge:** nhánh `p5-backend` đã vào `main`. Mọi người `git pull`.
