@@ -29,6 +29,7 @@ Bạn là agent hỗ trợ **P2**, phụ trách kiểm thử và triển khai sm
   - Trung tâm chấp nhận.
   - Cam kết các ca liên tiếp phủ kín 2 giờ tới, bắt đầu sau hiện tại vài chục giây, mỗi ca có primary và backup là ví demo.
   - In ra `planId`.
+  - Theo IC-12 đã chốt: chạy thêm task với `--short-plan` để tạo hợp đồng thứ 2 kỳ 5 phút, ký quỹ thêm 0.01 ETH, dùng thiết bị mẫu có khóa ngẫu nhiên trong RAM; cam kết 1 ca và gửi FALL sau khi ca bắt đầu. Chuẩn bị ít nhất 20 phút trước demo, để keeper xử lý hai cấp; không giảm thời gian chờ settle 600 giây.
 - Viết khung `backend/keeper.py`.
 
 **Danh sách test tối thiểu (mục tiêu ≥ 12 test đạt ở H11):**
@@ -44,14 +45,16 @@ Bạn là agent hỗ trợ **P2**, phụ trách kiểm thử và triển khai sm
 10. `checkTimeout` trước hạn → revert; gọi lặp ở cùng cấp → không ghi thêm vi phạm.
 11. Người lạ gọi `acknowledge` → revert.
 12. `confirmArrival` hợp lệ → `Arrived`.
-13. `settle` trước `periodEnd` → revert; sau đó chia đúng số tiền; gọi lần 2 → revert.
+13. `settle` khi giờ chain chưa lớn hơn `periodEnd + 600` → revert `"period not ended"`; còn sự cố treo → revert `"pending events"`; đủ điều kiện thì chia đúng số tiền; gọi lần 2 → revert `"already settled"`.
 14. Tiền phạt không vượt quá tiền ký quỹ.
+15. Hợp đồng bù nhìn dùng chung thiết bị không làm hợp đồng thật bị `"old nonce"` (nonce theo planId, IC-11).
+16. `reportFall` với `ts > periodEnd` → revert `"ts after period"`.
 
 ### Giai đoạn 2 (H6–H11)
 - Chạy toàn bộ test với contract thật của P1. Báo lỗi cho P1 kèm tên test.
 - `keeper.py` bản thật:
-  - Mỗi 5 giây đọc `eventCount()` và `getEvent(i)`.
-  - Sự cố nào chưa xác nhận mà đã quá `deadline` thì gửi `checkTimeout(i)` bằng `KEEPER_PRIVATE_KEY`.
+  - Mỗi 5 giây đọc `eventCount()` và `getFallEvent(i)` (IC-09).
+  - Chỉ gửi `checkTimeout(i)` khi `status == 0`, `level < 2` và giờ block mới nhất lớn hơn `deadline`, bằng `KEEPER_PRIVATE_KEY`. Không dùng giờ máy; cấp 2 có deadline bằng 0 nhưng không được gửi tiếp.
   - Bắt lỗi revert, không được crash. Log ra màn hình có giờ.
   - Chạy được với `NETWORK=localhost` và `NETWORK=sepolia`.
 - Hướng dẫn cả nhóm quy trình chạy local: `npx hardhat node` → `deploy.js --network localhost` → `demo_setup.js`. ⚠️ Mỗi lần khởi động lại node là mất toàn bộ trạng thái, phải chạy lại cả hai script. Trong MetaMask cần xóa dữ liệu hoạt động của tài khoản để tránh lỗi nonce.
