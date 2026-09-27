@@ -5,6 +5,7 @@
 secrets.h
 *.pem
 *.key
+.keys/
 
 # Node / Hardhat
 node_modules/
@@ -16,6 +17,11 @@ contracts/coverage/
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.sqlite
+*.sqlite-*
+gateway.db
+gateway.db-*
 .venv/
 venv/
 
@@ -27,3 +33,7 @@ iot_code/sdkconfig.old
 .DS_Store
 .vscode/
 .idea/
+.tools/
+*.log
+contracts/coverage.json
+contracts/gas-report.txt
