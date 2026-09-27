@@ -138,67 +138,80 @@ def tx_worker():
             break
             
         task_type, kwargs = task
-        try:
-            if not contract:
-                raise Exception("Contract not initialized")
-                
-            nonce = w3.eth.get_transaction_count(account.address)
-            
-            if task_type == 'reportFall':
-                tx = contract.functions.reportFall(
-                    kwargs['plan_id'],
-                    kwargs['ts'],
-                    kwargs['device_nonce'],
-                    kwargs['data_hash'],
-                    kwargs['sig']
-                ).build_transaction({
-                    'chainId': w3.eth.chain_id,
-                    'gas': 3000000,
-                    'nonce': nonce,
-                })
-            elif task_type == 'confirmArrival':
-                event_id = latest_event_id.get(kwargs['device'])
-                if not event_id:
-                    print(f"[confirmArrival] No eventId for {kwargs['device']}. Retrying...")
-                    time.sleep(2)
-                    tx_queue.put(task)
-                    tx_queue.task_done()
-                    continue
-                    
-                tx = contract.functions.confirmArrival(
-                    event_id,
-                    kwargs['ts'],
-                    kwargs['device_nonce'],
-                    kwargs['data_hash'],
-                    kwargs['sig']
-                ).build_transaction({
-                    'chainId': w3.eth.chain_id,
-                    'gas': 3000000,
-                    'nonce': nonce,
-                })
-            
-            signed_tx = w3.eth.account.sign_transaction(tx, private_key=GATEWAY_PRIVATE_KEY)
+        
+        while True:
             try:
-                raw_tx = signed_tx.raw_transaction
-            except AttributeError:
-                raw_tx = signed_tx.rawTransaction
+                if not contract:
+                    raise Exception("Contract not initialized")
+                    
+                nonce = w3.eth.get_transaction_count(account.address)
                 
-            tx_hash = w3.eth.send_raw_transaction(raw_tx)
-            
-            receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
-            if receipt.status == 1:
-                print(f"[{task_type}] Tx successful: {tx_hash.hex()}")
                 if task_type == 'reportFall':
-                    logs = contract.events.FallReported().process_receipt(receipt)
-                    if logs:
-                        event_id = logs[0].args.eventId
-                        latest_event_id[kwargs['device']] = event_id
-            else:
-                print(f"[{task_type}] Tx reverted: {tx_hash.hex()}")
+                    func = contract.functions.reportFall(
+                        kwargs['plan_id'],
+                        kwargs['ts'],
+                        kwargs['device_nonce'],
+                        kwargs['data_hash'],
+                        kwargs['sig']
+                    )
+                elif task_type == 'confirmArrival':
+                    event_id = latest_event_id.get(kwargs['device'])
+                    if not event_id:
+                        print(f"[confirmArrival] No eventId for {kwargs['device']}. Dropping task.")
+                        break
+                        
+                    func = contract.functions.confirmArrival(
+                        event_id,
+                        kwargs['ts'],
+                        kwargs['device_nonce'],
+                        kwargs['data_hash'],
+                        kwargs['sig']
+                    )
                 
-        except Exception as e:
-            print(f"[{task_type}] Error: {e}")
-            time.sleep(2)
+                try:
+                    func.call({'from': account.address})
+                except Exception as e:
+                    err_msg = str(e).lower()
+                    drop_reasons = ['old nonce', 'ts too old', 'ts in future', 'ts after period', 'no shift', 'bad sig', 'settled', 'already arrived', 'no event', 'no plan']
+                    if any(reason in err_msg for reason in drop_reasons):
+                        print(f"[{task_type}] Contract reverted permanently: {e}. Dropping task.")
+                        break
+                    else:
+                        print(f"[{task_type}] Call failed with unexpected error: {e}. Retrying...")
+                        time.sleep(2)
+                        continue
+
+                tx = func.build_transaction({
+                    'chainId': w3.eth.chain_id,
+                    'nonce': nonce,
+                })
+                
+                signed_tx = w3.eth.account.sign_transaction(tx, private_key=GATEWAY_PRIVATE_KEY)
+                try:
+                    raw_tx = signed_tx.raw_transaction
+                except AttributeError:
+                    raw_tx = signed_tx.rawTransaction
+                    
+                tx_hash = w3.eth.send_raw_transaction(raw_tx)
+                
+                receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
+                if receipt.status == 1:
+                    print(f"[{task_type}] Tx successful: {tx_hash.hex()}")
+                    if task_type == 'reportFall':
+                        logs = contract.events.FallReported().process_receipt(receipt)
+                        if logs:
+                            event_id = logs[0].args.eventId
+                            latest_event_id[kwargs['device']] = event_id
+                    elif task_type == 'confirmArrival':
+                        latest_event_id.pop(kwargs['device'], None)
+                else:
+                    print(f"[{task_type}] Tx reverted on chain: {tx_hash.hex()}")
+                
+                break
+                
+            except Exception as e:
+                print(f"[{task_type}] Network/RPC Error: {e}. Retrying in 2s...")
+                time.sleep(2)
         
         tx_queue.task_done()
 
@@ -207,14 +220,14 @@ def escalated_monitor():
         return
         
     last_block = deploy_block
-    chats = get_on_duty_fallback()
+    chats = get_on_duty(PLAN_ID, int(time.time()))
     
     while True:
         time.sleep(5)
         try:
             current_block = w3.eth.block_number
             if current_block > last_block:
-                logs = contract.events.Escalated.get_logs(fromBlock=last_block, toBlock=current_block)
+                logs = contract.events.Escalated.get_logs(from_block=last_block, to_block=current_block)
                 for event in logs:
                     event_id = event.args.eventId
                     level = event.args.level
@@ -233,9 +246,15 @@ def escalated_monitor():
                         
                 last_block = current_block + 1
         except Exception as e:
-            pass
+            print(f"[escalated_monitor] Error: {e}")
 
-def get_on_duty_fallback():
+def get_on_duty(plan_id, ts):
+    if contract:
+        try:
+            contract.functions.getOnDuty(plan_id, ts).call()
+        except Exception as e:
+            print(f"[getOnDuty] Chain call failed: {e}")
+            
     return {
         "primary": os.getenv("TELEGRAM_CHAT_PRIMARY"),
         "backup": os.getenv("TELEGRAM_CHAT_BACKUP"),
@@ -245,7 +264,7 @@ def get_on_duty_fallback():
 
 def handle_fall(device, ts, nonce, data_hash, sig_hex, t_received):
     print(f"FALL DETECTED from {device} (nonce {nonce})")
-    chats = get_on_duty_fallback()
+    chats = get_on_duty(PLAN_ID, ts)
     primary_chat = chats["primary"]
     if primary_chat:
         success = send_telegram(primary_chat, f"🚨 TÉ NGÃ PHÁT HIỆN! Thiết bị: {device}, Nonce: {nonce}")
@@ -273,9 +292,9 @@ def handle_fall(device, ts, nonce, data_hash, sig_hex, t_received):
 
 def handle_arrival(device, ts, nonce, data_hash, sig_hex, t_received):
     print(f"ARRIVAL DETECTED from {device} (nonce {nonce})")
-    chats = get_on_duty_fallback()
+    chats = get_on_duty(PLAN_ID, ts)
     if chats["primary"]:
-        send_telegram(chats["primary"], f"✅ NHÂN VIÊN ĐÃ ĐẾN! Thiết bị: {device}, Nonce: {nonce}")
+        send_telegram(chats["primary"], f"✅ NHÂN VIÊN ĐĐ ĐẾN! Thiết bị: {device}, Nonce: {nonce}")
         
     data_hash_bytes = bytes.fromhex(data_hash[2:]) if data_hash.startswith("0x") else bytes.fromhex(data_hash)
     sig_bytes = bytes.fromhex(sig_hex[2:]) if sig_hex.startswith("0x") else bytes.fromhex(sig_hex)
@@ -309,104 +328,121 @@ def recover_signer(device, event_type, timestamp, nonce, data_hash_hex, sig_hex)
         return None
 
 def on_message(client, userdata, msg):
-    t_received = time.time()
-    topic = msg.topic
-    payload = msg.payload.decode('utf-8')
     try:
-        data = json.loads(payload)
-    except json.JSONDecodeError:
-        print(f"Invalid JSON on topic {topic}")
-        return
-
-    if topic.endswith("/event"):
-        # {"device": "0x...", "eventType": 1, "timestamp": 1760000000, "nonce": 42, "dataHash": "0x...", "sig": "0x..."}
-        device = data.get("device", "").lower()
-        event_type = data.get("eventType")
-        ts = data.get("timestamp")
-        nonce = data.get("nonce")
-        data_hash = data.get("dataHash")
-        sig = data.get("sig")
-
-        if device not in REGISTERED_DEVICES and len(REGISTERED_DEVICES) > 0:
-            print(f"Unregistered device {device}, ignoring.")
+        t_received = time.time()
+        topic = msg.topic
+        payload = msg.payload.decode('utf-8')
+        try:
+            data = json.loads(payload)
+        except json.JSONDecodeError:
+            print(f"Invalid JSON on topic {topic}")
             return
 
-        recovered = recover_signer(device, event_type, ts, nonce, data_hash, sig)
-        if recovered != device:
-            print(f"Invalid signature from {device}, ignoring.")
-            return
+        if topic.endswith("/event"):
+            device = data.get("device")
+            event_type = data.get("eventType")
+            ts = data.get("timestamp")
+            nonce = data.get("nonce")
+            data_hash = data.get("dataHash")
+            sig = data.get("sig")
+            
+            if None in (device, event_type, ts, nonce, data_hash, sig):
+                print(f"Missing fields in event payload: {data}")
+                return
 
-        conn = sqlite3.connect(DB_FILE)
-        c = conn.cursor()
-        c.execute('''
-            INSERT INTO events (device, event_type, timestamp, nonce, data_hash, sig, t_received)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''', (device, event_type, ts, nonce, data_hash, sig, t_received))
-        conn.commit()
-        
-        # Check matching raw data
-        c.execute('SELECT samples_b64 FROM raw_data WHERE device=? AND nonce=?', (device, nonce))
-        row = c.fetchone()
-        conn.close()
+            device = str(device).lower()
 
-        if row:
-            samples_b64 = row[0]
-            raw_bytes = base64.b64decode(samples_b64)
-            calc_hash = Web3.keccak(raw_bytes).hex()
-            if not data_hash.endswith(calc_hash[2:]):
-                print(f"Warning: dataHash mismatch for {device} nonce {nonce}")
+            if device not in REGISTERED_DEVICES and len(REGISTERED_DEVICES) > 0:
+                print(f"Unregistered device {device}, ignoring.")
+                return
 
-        if event_type == 1:
-            handle_fall(device, ts, nonce, data_hash, sig, t_received)
-        elif event_type == 2:
-            handle_arrival(device, ts, nonce, data_hash, sig, t_received)
-        elif event_type == 3:
-            print(f"CANCEL from {device} (nonce {nonce})")
+            recovered = recover_signer(device, event_type, ts, nonce, data_hash, sig)
+            if recovered != device:
+                print(f"Invalid signature from {device}, ignoring.")
+                return
 
-    elif topic.endswith("/raw"):
-        # {"device": "0x...", "nonce": 42, "samples_b64": "..."}
-        device = data.get("device", "").lower()
-        nonce = data.get("nonce")
-        samples_b64 = data.get("samples_b64")
-        
-        conn = sqlite3.connect(DB_FILE)
-        c = conn.cursor()
-        c.execute('''
-            INSERT INTO raw_data (device, nonce, samples_b64, t_received)
-            VALUES (?, ?, ?, ?)
-        ''', (device, nonce, samples_b64, t_received))
-        conn.commit()
-        conn.close()
+            conn = sqlite3.connect(DB_FILE)
+            c = conn.cursor()
+            c.execute('''
+                INSERT INTO events (device, event_type, timestamp, nonce, data_hash, sig, t_received)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (device, event_type, ts, nonce, data_hash, sig, t_received))
+            conn.commit()
+            
+            c.execute('SELECT samples_b64 FROM raw_data WHERE device=? AND nonce=?', (device, nonce))
+            row = c.fetchone()
+            conn.close()
 
-        # --- PHƯƠNG ÁN DỰ PHÒNG AI (GIAI ĐOẠN 3) ---
-        # Dùng nếu ESP32 không đủ tài nguyên chạy model
-        # import sys
-        # sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'ai_model'))
-        # try:
-        #     import infer
-        #     raw_bytes = base64.b64decode(samples_b64)
-        #     is_fall = infer.predict(raw_bytes)
-        #     if not is_fall:
-        #         print(f"AI Gateway: Nhận diện không phải té ngã cho {device}, hủy event.")
-        #         return
-        # except ImportError:
-        #     pass
-        # ------------------------------------------
+            if row:
+                samples_b64 = row[0]
+                raw_bytes = base64.b64decode(samples_b64)
+                calc_hash = Web3.keccak(raw_bytes).hex()
+                if not data_hash.endswith(calc_hash[2:]):
+                    print(f"Warning: dataHash mismatch for {device} nonce {nonce}")
 
-    elif topic.endswith("/heartbeat"):
-        # {"device": "0x...", "timestamp": 1760000000}
-        device = data.get("device", "").lower()
-        ts = data.get("timestamp")
-        
-        conn = sqlite3.connect(DB_FILE)
-        c = conn.cursor()
-        c.execute('''
-            INSERT INTO heartbeats (device, timestamp, t_received)
-            VALUES (?, ?, ?)
-            ON CONFLICT(device) DO UPDATE SET timestamp=excluded.timestamp, t_received=excluded.t_received
-        ''', (device, ts, t_received))
-        conn.commit()
-        conn.close()
+            if event_type == 1:
+                handle_fall(device, ts, nonce, data_hash, sig, t_received)
+            elif event_type == 2:
+                handle_arrival(device, ts, nonce, data_hash, sig, t_received)
+            elif event_type == 3:
+                print(f"CANCEL from {device} (nonce {nonce})")
+
+        elif topic.endswith("/raw"):
+            device = data.get("device")
+            nonce = data.get("nonce")
+            samples_b64 = data.get("samples_b64")
+            
+            if None in (device, nonce, samples_b64):
+                print(f"Missing fields in raw payload: {data}")
+                return
+                
+            device = str(device).lower()
+            
+            conn = sqlite3.connect(DB_FILE)
+            c = conn.cursor()
+            c.execute('''
+                INSERT INTO raw_data (device, nonce, samples_b64, t_received)
+                VALUES (?, ?, ?, ?)
+            ''', (device, nonce, samples_b64, t_received))
+            conn.commit()
+            conn.close()
+
+            # --- PHƯƠNG ÁN DỰ PHÒNG AI (GIAI ĐOẠN 3) ---
+            # Dùng nếu ESP32 không đủ tài nguyên chạy model
+            # import sys
+            # sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'ai_model'))
+            # try:
+            #     import infer
+            #     raw_bytes = base64.b64decode(samples_b64)
+            #     is_fall = infer.predict(raw_bytes)
+            #     if not is_fall:
+            #         print(f"AI Gateway: Nhận diện không phải té ngã cho {device}, hủy event.")
+            #         return
+            # except ImportError:
+            #     pass
+            # ------------------------------------------
+
+        elif topic.endswith("/heartbeat"):
+            device = data.get("device")
+            ts = data.get("timestamp")
+            
+            if None in (device, ts):
+                print(f"Missing fields in heartbeat payload: {data}")
+                return
+                
+            device = str(device).lower()
+            
+            conn = sqlite3.connect(DB_FILE)
+            c = conn.cursor()
+            c.execute('''
+                INSERT INTO heartbeats (device, timestamp, t_received)
+                VALUES (?, ?, ?)
+                ON CONFLICT(device) DO UPDATE SET timestamp=excluded.timestamp, t_received=excluded.t_received
+            ''', (device, ts, t_received))
+            conn.commit()
+            conn.close()
+    except Exception as e:
+        print(f"Error in on_message: {e}")
 
 def heartbeat_monitor():
     while True:
@@ -421,7 +457,7 @@ def heartbeat_monitor():
         for device, t_received in rows:
             if now - t_received > 120:
                 print(f"HEARTBEAT LOST for {device}!")
-                chats = get_on_duty_fallback()
+                chats = get_on_duty(PLAN_ID, int(now))
                 for chat in [chats["center"], chats["family"]]:
                     if chat:
                         send_telegram(chat, f"⚠️ Mất kết nối thiết bị {device} quá 120s!")
@@ -451,7 +487,9 @@ def metrics_monitor():
             hb_rows = c.fetchall()
             last_heartbeat = {}
             for row in hb_rows:
-                iso_time = datetime.datetime.fromtimestamp(row[1]).isoformat() + "Z"
+                iso_time = datetime.datetime.fromtimestamp(row[1], datetime.timezone.utc).isoformat()
+                if not iso_time.endswith("Z") and not "+" in iso_time:
+                    iso_time += "Z"
                 last_heartbeat[row[0]] = iso_time
                 
             conn.close()

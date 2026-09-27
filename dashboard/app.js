@@ -1,5 +1,4 @@
-const PLAN_ID = 1; // Mặc định cho demo
-
+const PLAN_ID = Number(new URLSearchParams(location.search).get("plan") || 1);
 let provider;
 let signer;
 let contract;
@@ -12,6 +11,7 @@ const badge = document.getElementById('network-badge');
 const tbody = document.querySelector('#events-table tbody');
 
 async function init() {
+    document.getElementById('display-plan-id').innerText = PLAN_ID;
     connectBtn.addEventListener('click', connectWallet);
     
     // Attempt to load metrics (Task 3.2)
@@ -152,12 +152,16 @@ async function fetchData() {
                 let canAck = false;
                 
                 if (status === 0) {
-                    const diff = deadline - currentBlockTimestamp;
-                    canAck = true;
-                    if (diff > 0) {
-                        countdownHtml = `<span class="countdown ${diff > 30 ? 'safe' : 'warn'}">${diff}s</span>`;
+                    if (level === 2) {
+                        countdownHtml = '<span class="status-tag status-open" style="background:transparent; border: 1px solid var(--danger);">Đã báo Gia đình</span>';
                     } else {
-                        countdownHtml = `<span class="countdown danger">QUÁ HẠN (${Math.abs(diff)}s)</span>`;
+                        const diff = deadline - currentBlockTimestamp;
+                        canAck = true;
+                        if (diff > 0) {
+                            countdownHtml = `<span class="countdown ${diff > 30 ? 'safe' : 'warn'}">${diff}s</span>`;
+                        } else {
+                            countdownHtml = `<span class="countdown danger">QUÁ HẠN (${Math.abs(diff)}s)</span>`;
+                        }
                     }
                 }
 
