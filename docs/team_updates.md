@@ -7,6 +7,12 @@
 
 ---
 
+## [2026-09-27, lần 8] ✅ Đã merge `p4-ai` (commit `372c13c`)
+- **Có gì mới:** model `ai_model/dilated_aug_s0_int8.tflite` (51.120 byte), `model_data.cc/.h` (P1 đã so: khớp từng byte với file `.tflite`), `ai_preprocess.h`, golden vector tổng hợp, **`docs/ai_input_spec.md`** (100 Hz, ±16g / ±2000°/s, cửa sổ 50 mẫu, chuẩn hóa, lượng tử, ngưỡng 2 cửa sổ liên tiếp), tài liệu ôn và báo cáo P4. Mọi người `git pull`.
+- Merge không kiểm tra lại golden vector (theo quyết định trưởng nhóm).
+- **P4 còn thiếu:** luật bất động (hiện P3 tự đặt 2 giây trong `config.h`), `docs/ai_data_protocol.md`, `ai_model/infer.py` (dự phòng AI trên gateway), code/notebook huấn luyện trong repo, so sánh float vs INT8, số báo động giả mỗi giờ. Báo cáo phải ghi rõ model phát hiện **trước va chạm** khác bài toán cảnh báo sau té ngã.
+- **P4 + P3:** golden trên ESP32 đang lệch (xem review P3, lỗi 3). Hạn H14.
+
 ## [2026-09-27, lần 7] Review `p3-iot` (commit `e18d40b`): CHƯA MERGE
 - **P3 đọc ngay `docs/review/P3_review_2026-09-27.md`.** ✅ Chữ ký ESP32 (build trên PC) **khớp 4/4 vector chính thức**, low-s; payload MQTT, nonce, SNTP đúng AGENTS.md 6.1–6.2. Còn 3 lỗi 🔴:
   1. Thiếu `main/secrets.h.example` → clone về **build lỗi**.
