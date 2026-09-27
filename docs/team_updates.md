@@ -7,6 +7,15 @@
 
 ---
 
+## [2026-09-27, lần 7] Review `p3-iot` (commit `e18d40b`): CHƯA MERGE
+- **P3 đọc ngay `docs/review/P3_review_2026-09-27.md`.** ✅ Chữ ký ESP32 (build trên PC) **khớp 4/4 vector chính thức**, low-s; payload MQTT, nonce, SNTP đúng AGENTS.md 6.1–6.2. Còn 3 lỗi 🔴:
+  1. Thiếu `main/secrets.h.example` → clone về **build lỗi**.
+  2. **Chưa có nút vật lý** → không gửi được ARRIVAL.
+  3. AI trên board **lệch golden**, nhưng FALL chỉ đến từ AI, không có công tắc quay về bộ phát hiện ngưỡng → thêm `DETECTOR_MODE`, dùng ngưỡng cho Mốc 2.
+- **IC-16 (CHỜ CHỐT):** topic mới `carensla/<device>/stream` do P3 thêm. Đề xuất: chỉ là công cụ debug, mặc định tắt.
+- **P4:** model dùng tích chập giãn, TFLite Micro trên ESP32 cho kết quả lệch. Hạn H14: chưa khớp thì huấn luyện lại **không dilation**, hoặc viết `ai_model/infer.py` để chạy AI trên gateway.
+- **P5:** ESP32 gửi `event` trước `raw`; gateway hiện chỉ so `dataHash` khi `raw` đến trước → phải so khi nhận `raw`.
+
 ## [2026-09-27, lần 6] P1 đã sửa lỗi 10–13 của gateway/dashboard
 - Theo yêu cầu trưởng nhóm, P1 sửa thẳng trên `main` (file của P5): gateway **không còn kẹt hàng đợi** khi contract từ chối, **chặn chữ ký high-s**, không gắn ARRIVAL nhầm sự cố cũ; dashboard cho xác nhận ở cấp 2. Chi tiết: `docs/review/P5_review_2026-09-27.md` mục 5.
 - **P5:** `git pull origin main` và merge vào `p5-backend` trước khi làm tiếp.

@@ -175,3 +175,10 @@
   Danh sách đầy đủ: `NETWORK`, `SEPOLIA_RPC_URL`, `DEPLOYER_PRIVATE_KEY`, `GATEWAY_PRIVATE_KEY`, `KEEPER_PRIVATE_KEY`, `ETHERSCAN_API_KEY`, `CONTRACT_ADDRESS` (tùy chọn), `PLAN_ID`, `MQTT_HOST`, `MQTT_PORT`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_PRIMARY`, `TELEGRAM_CHAT_BACKUP`, `TELEGRAM_CHAT_FAMILY`, `TELEGRAM_CHAT_PROVIDER`, `REGISTERED_DEVICES`.
 - **Đã sửa:** `.env.example` (viết lại theo danh sách trên) và 3 dòng `os.getenv` trong `backend/gateway.py` (chỉ đổi tên biến môi trường, không đổi logic).
 - **Code mới từ nay:** Python dùng `os.getenv("<tên chốt>")`, JS dùng `process.env.<tên chốt>`. Cần biến mới thì thêm vào `.env.example` và ghi vào đây.
+
+## IC-16. Topic MQTT mới `carensla/<device>/stream` (dữ liệu IMU trực tiếp)
+- **Người đề xuất:** P3 (thêm vào code, chưa qua nhóm), P1 ghi lại khi review `e18d40b` · **Ảnh hưởng:** P3, P5 · **Trạng thái:** **CHỜ CHỐT**
+- **Hiện trạng:** firmware gửi QoS 0, 10 lần/giây, liên tục: `{"timestamps_us":[10 số], "samples":[[ax,ay,az,gx,gy,gz] × 10]}` (giá trị `int16` thô). Chỉ `visualizer/monitor.py` của P3 đọc; gateway không subscribe.
+- **Vấn đề:** không có trong AGENTS.md 6.1. Dữ liệu sức khỏe thô phát liên tục lên broker, trong khi câu trả lời chung của nhóm là "dữ liệu thô chỉ gửi quanh sự kiện". Tốn Wi-Fi và CPU của ESP32.
+- **Đề xuất (P1):** giữ làm **công cụ debug**, bọc bằng cờ `DEBUG_STREAM` mặc định **0**; không đưa vào AGENTS.md 6.1 và không trình bày như tính năng. Nếu nhóm muốn dùng khi demo thì bật riêng lúc demo và ghi trong báo cáo là kênh debug.
+- **Quyết định:** chờ nhóm.
