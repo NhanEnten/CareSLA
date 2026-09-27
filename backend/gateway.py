@@ -16,8 +16,9 @@ load_dotenv()
 
 # Config
 NETWORK = os.getenv("NETWORK", "localhost")
-RPC_URL = os.getenv("RPC_URL", "http://127.0.0.1:8545")
-MQTT_BROKER = os.getenv("MQTT_BROKER", "127.0.0.1")
+# Tên biến thống nhất theo IC-15: localhost cố định, sepolia đọc SEPOLIA_RPC_URL
+RPC_URL = os.getenv("SEPOLIA_RPC_URL") if NETWORK == "sepolia" else "http://127.0.0.1:8545"
+MQTT_BROKER = os.getenv("MQTT_HOST", "127.0.0.1")  # IC-15: biến môi trường tên MQTT_HOST
 MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 REGISTERED_DEVICES = [addr.strip().lower() for addr in os.getenv("REGISTERED_DEVICES", "").split(",") if addr.strip()]
@@ -91,7 +92,7 @@ def get_on_duty_fallback():
         "primary": os.getenv("TELEGRAM_CHAT_PRIMARY"),
         "backup": os.getenv("TELEGRAM_CHAT_BACKUP"),
         "family": os.getenv("TELEGRAM_CHAT_FAMILY"),
-        "center": os.getenv("TELEGRAM_CHAT_CENTER")
+        "center": os.getenv("TELEGRAM_CHAT_PROVIDER")  # IC-15: trung tâm = provider
     }
 
 def handle_fall(device, nonce, t_received):

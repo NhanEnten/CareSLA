@@ -7,6 +7,16 @@
 
 ---
 
+## [2026-09-27] P1 — Đã merge `p5-backend`, chữ ký gateway ↔ contract khớp, thống nhất tên biến môi trường
+- **Merge:** nhánh `p5-backend` đã vào `main`. Mọi người `git pull`.
+- ✅ **Test vector:** `docs/test_vectors.json` của P5 giống từng byte với file mẫu của P1. `npx hardhat test test/signature.vector.test.js`: **24/24 đạt**. Còn chờ ESP32 (P3) so khớp.
+- **IC-15 — tên biến môi trường đã chốt** (chi tiết trong `docs/interface_changes.md`). 3 tên đổi:
+  - `RPC_URL` → **`SEPOLIA_RPC_URL`** (localhost cố định `127.0.0.1:8545`, chọn theo `NETWORK`)
+  - `MQTT_BROKER` → **`MQTT_HOST`**
+  - `TELEGRAM_CHAT_CENTER` → **`TELEGRAM_CHAT_PROVIDER`**
+  - **P5:** P1 đã sửa sẵn 3 dòng `os.getenv` trong `backend/gateway.py` (không đổi logic). Ai đã có file `.env` thì đổi tên 3 biến trên.
+  - **P2:** `.env.example` (file của bạn) đã được viết lại đủ danh sách trong prompt P2 cộng biến riêng của P5. `hardhat.config.js` và `keeper.py` dùng đúng các tên này.
+
 ## [2026-09-26, lần 2] P1 chọn phương án A cho IC-07, IC-09, IC-12
 - **IC-09:** hàm `getEvent` đã **đổi tên thành `getFallEvent`**, tham số và giá trị trả về giữ nguyên. Ai viết code đọc sự cố (test P2, keeper P2, gateway/dashboard P5) dùng tên mới.
 - **IC-07, IC-12:** giữ như code hiện tại. Việc cụ thể của từng người nằm ở `docs/hop_chot_IC.md` mục 6.

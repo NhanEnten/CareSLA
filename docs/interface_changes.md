@@ -159,3 +159,18 @@
 - **Đối chiếu chéo:** P1 đã có file mẫu `contracts/p1_tmp/sample_test_vectors.json`, sinh bằng ethers (JS) với khóa test `keccak256("carensla test key - DO NOT USE")`. Chữ ký ECDSA ở Ethereum là tất định (RFC 6979). Nên nếu P5 dùng **cùng khóa và cùng input**, file Python của P5 phải ra **từng byte giống hệt** file mẫu. Đây là cách kiểm tra chéo rẻ nhất giữa hai cách cài đặt độc lập.
 - **Kiểm tra file:** `cd contracts && npx hardhat test test/signature.vector.test.js`. Test kiểm từng tầng: `packed` → `messageHash` (so với `hashEvent()` của contract) → `ethSigned` → `sig` (low-s, khôi phục ra đúng device) → contract chấp nhận `reportFall` / `confirmArrival` → sửa 1 byte thì bị từ chối.
 - **Quyết định:** …
+
+## IC-15. Thống nhất tên biến môi trường (`.env.example`)
+- **Người đề xuất:** P1 (theo yêu cầu trưởng nhóm, 2026-09-27) · **Ảnh hưởng:** P2, P5 · **Trạng thái:** **ĐÃ CHỐT** (P1) — báo P2, P5
+- **Vấn đề:** prompt P2 và code P5 dùng tên khác nhau cho cùng một biến, nên gateway và keeper sẽ đọc hai tên khác nhau từ cùng một file `.env`.
+- **Quyết định:** lấy danh sách trong prompt P2 làm chuẩn (có trước), giữ thêm các biến riêng của P5.
+
+  | Mục | Prompt P2 | P5 đã dùng | **Tên chốt** |
+  |---|---|---|---|
+  | RPC | `SEPOLIA_RPC_URL` | `RPC_URL` | **`SEPOLIA_RPC_URL`**; localhost cố định `http://127.0.0.1:8545`, chọn theo `NETWORK` |
+  | MQTT | `MQTT_HOST` | `MQTT_BROKER` | **`MQTT_HOST`** |
+  | Telegram trung tâm | `TELEGRAM_CHAT_PROVIDER` | `TELEGRAM_CHAT_CENTER` | **`TELEGRAM_CHAT_PROVIDER`** (khớp chữ "provider" trong contract) |
+
+  Danh sách đầy đủ: `NETWORK`, `SEPOLIA_RPC_URL`, `DEPLOYER_PRIVATE_KEY`, `GATEWAY_PRIVATE_KEY`, `KEEPER_PRIVATE_KEY`, `ETHERSCAN_API_KEY`, `CONTRACT_ADDRESS` (tùy chọn), `PLAN_ID`, `MQTT_HOST`, `MQTT_PORT`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_PRIMARY`, `TELEGRAM_CHAT_BACKUP`, `TELEGRAM_CHAT_FAMILY`, `TELEGRAM_CHAT_PROVIDER`, `REGISTERED_DEVICES`.
+- **Đã sửa:** `.env.example` (viết lại theo danh sách trên) và 3 dòng `os.getenv` trong `backend/gateway.py` (chỉ đổi tên biến môi trường, không đổi logic).
+- **Code mới từ nay:** Python dùng `os.getenv("<tên chốt>")`, JS dùng `process.env.<tên chốt>`. Cần biến mới thì thêm vào `.env.example` và ghi vào đây.
