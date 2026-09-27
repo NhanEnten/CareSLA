@@ -1,0 +1,71 @@
+{
+  "model": "dilated_aug_s0",
+  "sample_rate_hz": 100,
+  "window_samples": 50,
+  "inference_step_samples": 10,
+  "feature_order": [
+    "AccX",
+    "AccY",
+    "AccZ",
+    "GyrX",
+    "GyrY",
+    "GyrZ"
+  ],
+  "clip_range": 4.0,
+  "mean": [
+    0.021578215062618256,
+    -0.7201448678970337,
+    -0.01292577013373375,
+    -0.7933411002159119,
+    7.5048747062683105,
+    -0.05011044815182686
+  ],
+  "std": [
+    0.34529754519462585,
+    0.5091134905815125,
+    0.5098982453346252,
+    36.189029693603516,
+    43.40152359008789,
+    21.957178115844727
+  ],
+  "fall_probability_threshold": 0.7,
+  "consecutive_windows": 2,
+  "train_subjects": [
+    "SA09",
+    "SA31",
+    "SA35",
+    "SA22",
+    "SA18",
+    "SA32",
+    "SA33",
+    "SA06",
+    "SA10",
+    "SA16",
+    "SA24",
+    "SA20",
+    "SA38",
+    "SA12",
+    "SA13",
+    "SA19",
+    "SA07",
+    "SA27",
+    "SA26",
+    "SA11"
+  ],
+  "val_subjects": [
+    "SA17",
+    "SA28",
+    "SA37",
+    "SA25",
+    "SA08",
+    "SA29"
+  ],
+  "test_subjects": [
+    "SA36",
+    "SA21",
+    "SA30",
+    "SA23",
+    "SA14",
+    "SA15"
+  ]
+}
