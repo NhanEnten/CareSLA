@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 import paho.mqtt.client as mqtt
 from paho.mqtt.enums import CallbackAPIVersion
 from web3 import Web3
+from web3.exceptions import ContractLogicError
 from eth_account import Account
 from eth_account.messages import encode_defunct
 import requests
@@ -168,18 +169,16 @@ def tx_worker():
                         kwargs['sig']
                     )
                 
+                # Gọi thử trước khi gửi. Contract từ chối (mọi lý do, kể cả custom error của OpenZeppelin)
+                # thì gửi lại cũng vô ích: bỏ task. Lỗi mạng/RPC rơi xuống except ngoài để thử lại.
                 try:
                     func.call({'from': account.address})
-                except Exception as e:
-                    err_msg = str(e).lower()
-                    drop_reasons = ['old nonce', 'ts too old', 'ts in future', 'ts after period', 'no shift', 'bad sig', 'settled', 'already arrived', 'no event', 'no plan']
-                    if any(reason in err_msg for reason in drop_reasons):
-                        print(f"[{task_type}] Contract reverted permanently: {e}. Dropping task.")
-                        break
-                    else:
-                        print(f"[{task_type}] Call failed with unexpected error: {e}. Retrying...")
-                        time.sleep(2)
-                        continue
+                except ContractLogicError as e:
+                    print(f"[{task_type}] Contract reverted: {e}. Dropping task.")
+                    if task_type == 'reportFall':
+                        # FALL không lên chain -> ARRIVAL sau đó không được gắn vào sự cố cũ
+                        latest_event_id.pop(kwargs['device'], None)
+                    break
 
                 tx = func.build_transaction({
                     'chainId': w3.eth.chain_id,
@@ -206,6 +205,8 @@ def tx_worker():
                         latest_event_id.pop(kwargs['device'], None)
                 else:
                     print(f"[{task_type}] Tx reverted on chain: {tx_hash.hex()}")
+                    if task_type == 'reportFall':
+                        latest_event_id.pop(kwargs['device'], None)
                 
                 break
                 
@@ -307,7 +308,14 @@ def handle_arrival(device, ts, nonce, data_hash, sig_hex, t_received):
         'sig': sig_bytes
     }))
 
+SECP256K1_N = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
+
 def recover_signer(device, event_type, timestamp, nonce, data_hash_hex, sig_hex):
+    # Chữ ký r(32) s(32) v(1). Từ chối high-s giống OpenZeppelin ECDSA (IC-14)
+    sig_body = sig_hex[2:] if sig_hex.startswith("0x") else sig_hex
+    if len(sig_body) != 130 or int(sig_body[64:128], 16) > SECP256K1_N // 2:
+        print("Signature rejected: wrong length or high-s")
+        return None
     # packed = abi.encodePacked(address, uint8, uint64, uint64, bytes32)
     device_bytes = bytes.fromhex(device[2:])
     data_hash_bytes = bytes.fromhex(data_hash_hex[2:]) if data_hash_hex.startswith("0x") else bytes.fromhex(data_hash_hex)

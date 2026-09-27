@@ -152,11 +152,11 @@ async function fetchData() {
                 let canAck = false;
                 
                 if (status === 0) {
+                    canAck = true; // contract cho primary/backup xác nhận ở mọi cấp (IC-08)
                     if (level === 2) {
                         countdownHtml = '<span class="status-tag status-open" style="background:transparent; border: 1px solid var(--danger);">Đã báo Gia đình</span>';
                     } else {
                         const diff = deadline - currentBlockTimestamp;
-                        canAck = true;
                         if (diff > 0) {
                             countdownHtml = `<span class="countdown ${diff > 30 ? 'safe' : 'warn'}">${diff}s</span>`;
                         } else {

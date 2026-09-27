@@ -7,6 +7,10 @@
 
 ---
 
+## [2026-09-27, lần 6] P1 đã sửa lỗi 10–13 của gateway/dashboard
+- Theo yêu cầu trưởng nhóm, P1 sửa thẳng trên `main` (file của P5): gateway **không còn kẹt hàng đợi** khi contract từ chối, **chặn chữ ký high-s**, không gắn ARRIVAL nhầm sự cố cũ; dashboard cho xác nhận ở cấp 2. Chi tiết: `docs/review/P5_review_2026-09-27.md` mục 5.
+- **P5:** `git pull origin main` và merge vào `p5-backend` trước khi làm tiếp.
+
 ## [2026-09-27, lần 5] ✅ Đã merge `p5-backend` (commit `b307696`)
 - **Có gì mới:** gateway gửi `reportFall`/`confirmArrival` qua hàng đợi có thử lại, theo dõi `Escalated` để báo Telegram cấp 1/2, dashboard (`dashboard/`), tài liệu ôn của P5. Mọi người `git pull`.
 - **P1 đã chạy lại thật** 6 tiêu chí trong `docs/review/P5_review_2026-09-27.md` mục 4: **đạt cả 6** (chuyển cấp có báo, RPC lỗi 10 s vẫn gửi lại đúng thứ tự, gói rác không làm sập gateway, ARRIVAL mồ côi bỏ 1 lần).
