@@ -7,6 +7,11 @@
 
 ---
 
+## [2026-09-27, lần 9] ✅ Đã merge `p3-iot` (commit `e18d40b`) — lỗi review CHƯA sửa
+- Trưởng nhóm quyết định merge sớm để cả nhóm có firmware trên `main`. **3 lỗi 🔴 trong `docs/review/P3_review_2026-09-27.md` vẫn còn**: thiếu `main/secrets.h.example` (clone về build lỗi), chưa có nút vật lý (không có ARRIVAL), AI lệch golden mà chưa có `DETECTOR_MODE`.
+- **P3:** từ giờ làm tiếp trên `p3-iot` sau khi `git pull origin main`, sửa theo mục 3 file review, chạy mục 4, báo P1.
+- **Ai build firmware:** sau `git pull` chạy `git submodule update --init --recursive` (có `esp-tflite-micro`, `esp-nn`). Tạm tự tạo `iot_code/main/secrets.h` theo mẫu ở mục 3 lỗi 1 của file review.
+
 ## [2026-09-27, lần 8] ✅ Đã merge `p4-ai` (commit `372c13c`)
 - **Có gì mới:** model `ai_model/dilated_aug_s0_int8.tflite` (51.120 byte), `model_data.cc/.h` (P1 đã so: khớp từng byte với file `.tflite`), `ai_preprocess.h`, golden vector tổng hợp, **`docs/ai_input_spec.md`** (100 Hz, ±16g / ±2000°/s, cửa sổ 50 mẫu, chuẩn hóa, lượng tử, ngưỡng 2 cửa sổ liên tiếp), tài liệu ôn và báo cáo P4. Mọi người `git pull`.
 - Merge không kiểm tra lại golden vector (theo quyết định trưởng nhóm).
