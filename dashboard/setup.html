@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareSLA — Thiết lập hợp đồng</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="setup-page">
+<main class="glass-container main-wrapper">
+  <header>
+    <div><h1>CareSLA <span>Thiết lập</span></h1><p id="wallet-role">Ví đang dùng: Chưa kết nối</p></div>
+    <div class="header-right"><a href="index.html">Giám sát</a><span id="network-badge" class="badge default">Chưa kết nối</span><button id="connect-btn" class="btn primary-btn">Kết nối MetaMask</button></div>
+  </header>
+  <p id="setup-message" role="status" aria-live="polite">Kết nối ví Hardhat Local để bắt đầu.</p>
+  <section class="glass plan-info">
+    <label for="open-plan">Mở hợp đồng có sẵn (planId)</label>
+    <div class="action-row"><input id="open-plan" type="number" min="1" step="1"><button id="open-btn" class="btn primary-btn" disabled>Mở hợp đồng</button></div>
+    <p id="chain-clock">Giờ chain: —</p>
+  </section>
+  <nav class="setup-progress" aria-label="Tiến trình"><span id="progress-1">① Tạo hợp đồng</span><span id="progress-2">② Chấp nhận</span><span id="progress-3">③ Cam kết ca</span><span id="progress-4">④ Giám sát</span></nav>
+  <section id="step-1" class="glass plan-info">
+    <h2>① Gia đình tạo hợp đồng — ví #1</h2><p id="proof-1" class="setup-proof"></p>
+    <div class="setup-fields">
+      <label>Địa chỉ trung tâm (ví #2)<input id="provider-address" autocomplete="off" value="0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"></label>
+      <label>Địa chỉ thiết bị<input id="device-address" autocomplete="off" placeholder="0x…"></label>
+      <label>SLA (giây)<input id="sla" type="number" min="1" step="1" value="60"></label>
+      <label>Mức phạt (ETH)<input id="penalty" inputmode="decimal" value="0.2"></label>
+      <label>Ký quỹ (ETH)<input id="deposit" inputmode="decimal" value="1"></label>
+      <label>Kết thúc kỳ<input id="period-end" type="datetime-local" step="1"><span id="period-remaining"></span></label>
+    </div>
+    <button id="create-btn" class="btn primary-btn" disabled>Tạo hợp đồng và khóa ký quỹ</button>
+    <p id="create-balances" class="setup-proof"></p>
+  </section>
+  <section id="step-2" class="glass plan-info setup-locked">
+    <h2>② Trung tâm chấp nhận — ví #2</h2><p id="proof-2" class="setup-proof"></p>
+    <p id="plan-summary" class="setup-proof">Chưa có hợp đồng.</p>
+    <button id="accept-btn" class="btn primary-btn" disabled>Chấp nhận</button>
+  </section>
+  <section id="step-3" class="glass plan-info setup-locked">
+    <h2>③ Cam kết ca trực — ví #2</h2><p id="proof-3" class="setup-proof"></p>
+    <div class="setup-fields">
+      <label>Bắt đầu ca<input id="shift-start" type="datetime-local" step="1"></label>
+      <label>Kết thúc ca<input id="shift-end" type="datetime-local" step="1"></label>
+      <label>Nhân viên chính (ví #3)<input id="primary-address" value="0x90F79bf6EB2c4f870365E785982E1f101E93b906"></label>
+      <label>Nhân viên dự phòng (ví #4)<input id="backup-address" value="0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65"></label>
+    </div>
+    <div class="action-row"><button id="defaults-btn" class="btn" disabled>Điền mặc định</button><button id="shift-btn" class="btn primary-btn" disabled>Cam kết ca</button><button id="past-btn" class="btn" disabled>Thử sửa ca đã qua</button></div>
+    <p>Phép thử chỉ mô phỏng ca bắt đầu trong quá khứ; ca đã cam kết không có hàm sửa.</p>
+    <div class="table-container"><table><thead><tr><th>Bắt đầu</th><th>Kết thúc</th><th>Chính</th><th>Dự phòng</th><th>Trạng thái</th><th>Giao dịch / block</th></tr></thead><tbody id="shifts-body"></tbody></table></div>
+  </section>
+  <section id="step-4" class="glass plan-info setup-locked">
+    <h2>④ Bắt đầu giám sát</h2><p id="proof-4" class="setup-proof"></p>
+    <p id="checklist">Chưa có hợp đồng.</p><p id="gateway-hint"></p>
+    <div class="action-row"><button id="copy-btn" class="btn" disabled>Copy PLAN_ID</button><button id="monitor-btn" class="btn primary-btn" disabled>Mở giám sát</button></div>
+  </section>
+  <section id="finish-section" class="glass plan-info" hidden>
+    <h2>Kết thúc demo — chỉ Hardhat local</h2><p id="settle-countdown"></p>
+    <p>Tua giờ ảnh hưởng toàn bộ node local. Chỉ dùng sau sự cố cuối cùng.</p>
+    <div class="action-row"><button id="warp-btn" class="btn" disabled>⏩ Tua giờ tới lúc được chia tiền (chỉ Hardhat local)</button><button id="settle-btn" class="btn danger-btn" disabled>Settle — chia tiền</button></div>
+    <p id="settle-formula"></p><p id="settle-balances" class="setup-proof"></p>
+  </section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+<script src="setup.js"></script>
+</body>
+</html>
