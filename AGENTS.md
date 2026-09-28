@@ -230,7 +230,7 @@ carensla/
     └── report/Px_*.md           # bản nháp phần báo cáo của từng người
 ```
 
-**P6 (từ 2026-09-27, do P1 giao):** hoàn thiện code còn thiếu để chạy demo, làm trên nhánh `p6-finish`. P6 **được sửa** file của P2–P5 **chỉ cho các việc** trong `prompts/P6_hoan_thien_demo.md`, ghi lại trong `docs/progress/P6.md`; không sửa `CareSLA.sol`, test chữ ký của P1, mục 6 của file này.
+**P6 (từ 2026-09-27, do P1 giao):** hoàn thiện code còn thiếu để chạy demo, làm trên nhánh `p6`. P6 **được sửa** file của P2–P5 **chỉ cho các việc** trong `prompts/P6_hoan_thien_demo.md` và `prompts/P6_dashboard_demo_10phut.md`, ghi lại trong `docs/progress/P6.md`; không sửa `CareSLA.sol`, test chữ ký của P1, mục 6 của file này.
 
 **Không sửa file thuộc quyền người khác.** Cần thay đổi thì ghi vào `docs/interface_changes.md`, hoặc nhắn cho người dùng để họ trao đổi với người phụ trách.
 

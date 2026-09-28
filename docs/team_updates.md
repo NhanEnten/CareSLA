@@ -7,6 +7,11 @@
 
 ---
 
+## [2026-09-28, lần 15] Việc mới cho P6: trang thiết lập hợp đồng + demo 10 phút
+- Prompt: **`prompts/P6_dashboard_demo_10phut.md`**. P6 thêm `dashboard/setup.html` + `setup.js`: ① gia đình tạo hợp đồng (khóa ký quỹ) → ② trung tâm chấp nhận → ③ cam kết ca trực (có thử sửa ca về quá khứ để thấy contract từ chối) → ④ mở giám sát; nút tua giờ **chỉ Hardhat local** để demo chia tiền (contract bắt chờ `periodEnd + 600 s`).
+- Giữ nguyên giao diện trang giám sát (chỉ thêm 1 link). Không sửa contract, gateway, keeper, firmware. SLA demo mặc định 30 s để trọn kịch bản trong 10 phút (ghi IC-18, chờ chốt).
+- P6 làm trên nhánh `p6`, được sửa `dashboard/` cho việc này (AGENTS.md mục 7 đã ghi). **P5:** báo P6 trước nếu định sửa `dashboard/`.
+
 ## [2026-09-28, lần 14] Dashboard chậm ~35 s: đã sửa · ✅ IC-17 bỏ Telegram, giữ config firmware
 - **Nguyên nhân chậm (P1 đo trên Hardhat local):**
   - Gateway → chain: **35–50 ms** (FALL qua MQTT callback tới khi `eventCount` tăng). Không phải chỗ chậm.
