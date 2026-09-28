@@ -72,7 +72,7 @@ Phải lớn hơn, không chỉ bằng `periodEnd + 600`. Chỉ chạy sau kiể
 - Không gọi RPC trong đường cảnh báo vì chain chậm không được chặn cứu người.
 - Tách trang thiết lập giữ giao diện giám sát P5. Không dùng React hoặc sửa ABI.
 - Đọc bằng JsonRpcProvider; BrowserProvider chỉ để ký và nhận thay đổi ví.
-- SLA mặc định 60 giây theo AGENTS.md, đề xuất 30 giây đang chờ IC-18.
+- IC-18 đã chốt sau merge P1: SLA 60 giây, ký quỹ 100 ETH, phạt 20 ETH trên local.
 
 ## 5. Câu hỏi phản biện
 
@@ -82,11 +82,11 @@ Phải lớn hơn, không chỉ bằng `periodEnd + 600`. Chỉ chạy sau kiể
 4. Heartbeat khôi phục có xóa sự cố không? Không; heartbeat chỉ là giám sát kết nối off-chain.
 5. RPC chết thì gì còn chạy? MQTT và cảnh báo, giao dịch chờ worker thử lại.
 6. Ai thực hiện chuyển cấp? Keeper gửi giao dịch, contract kiểm tra điều kiện và ghi phạt.
-7. Vì sao ví gia đình giảm hơn 1 ETH? 1 ETH ký quỹ cộng gas tạo hợp đồng.
+7. Vì sao ví gia đình giảm hơn 100 ETH? 100 ETH ký quỹ cộng gas tạo hợp đồng.
 8. Tua giờ có dùng trên Sepolia không? Không; đây là RPC riêng của node Hardhat.
 9. Tại sao phải chờ thêm 600 giây? Cho gói sự cố trễ trong cửa sổ timestamp được xử lý.
 10. Vì sao không gửi FALL sau tua giờ? Thiết bị ký giờ thật, chain đã đi trước quá cửa sổ 600 giây.
-11. Hai vi phạm với 0.2 ETH/lần và 1 ETH ký quỹ chia thế nào? Gia đình 0.4, trung tâm 0.6 ETH.
+11. Hai vi phạm với 20 ETH/lần và 100 ETH ký quỹ chia thế nào? Gia đình 40, trung tâm 60 ETH.
 12. Trang ghi PLAN_ID=1 có chứng minh gateway cấu hình đúng không? Không; đó chỉ là mặc định, phải kiểm tra tiến trình thực tế.
 
 ## 6. Giới hạn và điều chưa chắc chắn

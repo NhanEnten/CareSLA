@@ -91,8 +91,8 @@ restart Hardhat, deploy/setup lại rồi restart gateway/keeper. Đọc
 ## Demo 10 phút
 
 Trang mới: `http://127.0.0.1:8000/dashboard/setup.html` (chỉ Hardhat Local, chainId 31337).
-SLA đề xuất 30 giây đang **CHỜ CHỐT IC-18**; mặc định hiện giữ 60 giây theo AGENTS.md.
-Kịch bản dưới đây vẫn có đủ thời gian khi dùng 60 giây; chỉ nhập 30 khi nhóm chốt.
+IC-18 **ĐÃ CHỐT**: SLA 60 giây, ký quỹ 100 ETH, phạt 20 ETH mỗi vi phạm.
+Thông số này chỉ dùng Hardhat local theo quyết định P1 ngày 28/09/2026.
 
 ### Chuẩn bị trước giờ demo
 
@@ -114,7 +114,7 @@ Kịch bản dưới đây vẫn có đủ thời gian khi dùng 60 giây; chỉ
 
 | Phút | Thao tác | Kết quả cần quan sát |
 |---|---|---|
-| 0:00 | Ví #1 tạo hợp đồng: 1 ETH, phạt 0.2 ETH, kỳ +15 phút | Số dư gia đình giảm, contract giữ tiền; Tx và block |
+| 0:00 | Ví #1 tạo hợp đồng: 100 ETH, phạt 20 ETH, kỳ +15 phút | Số dư gia đình giảm, contract giữ tiền; Tx và block |
 | 1:00 | Đổi ví #2, chấp nhận | Vai trò đổi ngay; điều khoản đọc từ chain |
 | 1:30 | Điền mặc định ca +20 giây, cam kết, thử ca quá khứ | Bảng ca và thông báo contract từ chối; phép thử không gửi tx |
 | 2:30 | Ca bắt đầu, kiểm tra PLAN_ID, mở giám sát | Checklist đủ điều kiện; URL có planId |
@@ -122,7 +122,7 @@ Kịch bản dưới đây vẫn có đủ thời gian khi dùng 60 giây; chỉ
 | 3:30 | FALL #1, ví #3 xác nhận trong SLA, rồi ARRIVAL | Không vi phạm, trạng thái đã đến nơi |
 | 5:00 | FALL #2, không xác nhận | Keeper chuyển dự phòng rồi gia đình; 2 vi phạm |
 | 7:15 | Sau khi thấy cấp 2, gửi ARRIVAL | Hoàn tất trước khi tua giờ |
-| 7:30 | Về setup, tua giờ cuối demo, Settle | Gia đình 0.4 ETH, trung tâm 0.6 ETH; số dư ví ký còn trừ gas |
+| 7:30 | Về setup, tua giờ cuối demo, Settle | Gia đình 40 ETH, trung tâm 60 ETH; số dư ví ký còn trừ gas |
 | 8:00–10:00 | Dự phòng và hỏi đáp | Giải thích giữ tiền, lịch bất biến, keeper, công thức phạt |
 
 Với SLA 60 giây, hai cấp cần hơn 120 giây cộng chu kỳ keeper; với 30 giây cần hơn
