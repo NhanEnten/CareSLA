@@ -149,9 +149,12 @@ async function fetchData() {
                 
                 if (Number(ev[0]) !== PLAN_ID) continue; // Only for this plan
                 
+                const ts = Number(ev[1]);
                 const deadline = Number(ev[6]);
                 const level = Number(ev[7]);
                 const status = Number(ev[8]);
+                
+                const fallTimeStr = new Date(ts * 1000).toLocaleTimeString('vi-VN');
                 
                 let statusLabel = '';
                 let statusClass = '';
@@ -189,7 +192,7 @@ async function fetchData() {
 
                 html += `
                     <tr>
-                        <td>#${i} ${txLink}</td>
+                        <td>#${i} <br><small style="color:#888; font-size: 0.85rem;">(${fallTimeStr})</small> ${txLink}</td>
                         <td><span class="status-tag ${statusClass}">${statusLabel}</span></td>
                         <td>${levelLabel}</td>
                         <td>${countdownHtml}</td>
