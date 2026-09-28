@@ -12,8 +12,17 @@ git submodule update --init --recursive
 
 ## 1. Điền cấu hình trước khi nạp
 
+- Bản tích hợp P6 mặc định `DETECTOR_MODE=0`: phát hiện ngưỡng gia tốc,
+  kiểm tra bất động rồi mở cửa sổ hủy; không khởi tạo hoặc gọi AI.
+  `DETECTOR_MODE=1` giữ luồng AI cũ, golden trên board vẫn chưa được xác nhận.
+- `PIN_BUTTON=5` dành cho nút ngoài nối GND. Chưa có nút ngoài có thể dùng
+  `PIN_BUTTON=0` và nút BOOT; không giữ BOOT khi cấp nguồn/reset.
+- `DEBUG_STREAM=0` mặc định không tạo queue/task stream. Bật 1 chỉ để debug
+  đồ thị visualizer; stream chưa được chốt là giao diện chính thức.
+  Nút hủy USB cũng là công cụ debug, không phải IC-15 (IC-15 chốt biến môi trường).
+
 - `main/config.h`: điền `PIN_SDA`, `PIN_SCL`; nếu giám sát thì điền cả `PIN_BUTTON`, `PIN_BUZZER`.
-  Mặc định -1 sẽ in lỗi và dừng, không truy cập chân tùy ý. Không dùng GPIO6–11 (flash),
+  Cấu hình P3 hiện dùng SDA25/SCL26, nút5/còi18; giá trị -1 sẽ in lỗi và dừng. Không dùng GPIO6–11 (flash),
   GPIO1/3 (serial), GPIO34–39 cho cấu hình cần output/pull-up. Tránh chân boot strap nếu chưa hiểu mạch board.
 - MPU6050: địa chỉ `0x68` khi AD0 thấp, `0x69` khi AD0 cao. Nối chung GND,
   I2C mức logic 3,3V; kiểm tra pull-up của module. Xem nhãn module trước khi nối nguồn.
@@ -46,6 +55,8 @@ Thoát monitor bằng Ctrl + ].
 
 1. Copy `main/secrets.h.example` thành `main/secrets.h`; điền Wi-Fi, broker và khóa thiết bị testnet từ P5 tại máy.
    Không gửi khóa lên chat, không commit secrets.h. Broker phải là IP laptop trong LAN, không dùng localhost trên ESP32.
+   Nếu đã build bằng file mẫu trước khi tạo secrets.h, chạy `idf.py fullclean build`
+   một lần để tránh Ninja giữ object đã compile với cấu hình mẫu.
 2. Đối chiếu spec P4 rồi đặt `P4_SPEC_CONFIRMED=1`, `RUN_MONITOR=1`.
 3. Build/nạp lại. Địa chỉ Ethereum của thiết bị được suy ra từ khóa và in ra serial, viết thường.
 4. Trên laptop chạy broker và `mosquitto_sub -h localhost -t "carensla/#" -v`.

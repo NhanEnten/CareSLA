@@ -4,6 +4,7 @@
 #define PIN_SDA       (25)
 #define PIN_SCL       (26)
 #define PIN_BUTTON    (5)
+// Chưa có nút ngoài: dùng PIN_BUTTON (0), nút BOOT; không giữ khi reset.
 #define PIN_BUZZER    (18)
 #define BUZZER_PASSIVE 0
 #define BUZZER_ACTIVE_LEVEL 1
@@ -11,6 +12,14 @@
 
 // 0: tắt monitor, 1: máy trạng thái + sự kiện MQTT có chữ ký.
 #define RUN_MONITOR 1
+// 0: ngưỡng tạm cho demo; 1: AI INT8 (golden trên board chưa đạt).
+#define DETECTOR_MODE 0
+// Chỉ debug visualizer; topic stream chưa thuộc giao diện chính thức.
+#define DEBUG_STREAM 0
+
+#if DETECTOR_MODE != 0 && DETECTOR_MODE != 1
+#error "DETECTOR_MODE phai la 0 hoac 1"
+#endif
 
 // TẠM để thử driver, chưa phải đặc tả P4. Chỉ bật monitor sau khi đối chiếu.
 #define P4_SPEC_CONFIRMED 1

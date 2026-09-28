@@ -35,7 +35,10 @@ typedef struct {
 } event_job_t;
 
 static const char *TAG = "care";
-static QueueHandle_t sample_queue, event_queue, stream_queue;
+static QueueHandle_t sample_queue, event_queue;
+#if DEBUG_STREAM
+static QueueHandle_t stream_queue;
+#endif
 static QueueHandle_t cancel_command_queue;
 static uint8_t device_key[32], device[20];
 static char device_text[43];
@@ -111,6 +114,7 @@ static void init_button_buzzer(void)
     }
 }
 
+#if DEBUG_STREAM
 // Stream task: gom 10 mẫu một lần, gửi QoS 0 lên topic stream, ~10 Hz update.
 // Không block sample_task hay event_task.
 static void stream_task(void *arg)
@@ -145,6 +149,8 @@ static void stream_task(void *arg)
     }
 }
 
+#endif
+
 static void sample_task(void *arg)
 {
     (void)arg;
@@ -157,7 +163,9 @@ static void sample_task(void *arg)
         if (mpu6050_read(&s) == ESP_OK) {
             if (xQueueSend(sample_queue, &s, 0) != pdTRUE) dropped++;
             // Gửi sang stream_queue (QoS 0), đầy thì bỏ qua, không ảnh hưởng sự kiện.
+#if DEBUG_STREAM
             if (stream_queue) xQueueSend(stream_queue, &s, 0);
+#endif
         } else errors++;
         int64_t now = esp_timer_get_time();
         if (now - report_at >= 5000000) {
@@ -270,7 +278,7 @@ static void control_task(void *arg)
         bool impact = false, still = false;
         bool gap = valid && last_sample && sample.at_us - last_sample > 30000;
         if (gap) {
-            ai_detector_reset();
+            if (DETECTOR_MODE == 1) ai_detector_reset();
             ai_session_active = false;
             impact_latched = false;
             below_impact_samples = 0;
@@ -288,7 +296,8 @@ static void control_task(void *arg)
                 a2 += a*a; g2 += g*g;
             }
             still = fabsf(sqrtf(a2) - 1.0f) <= STILL_ACCEL_TOL_G && g2 <= STILL_GYRO_DPS * STILL_GYRO_DPS;
-            if (!gap) {
+            if (DETECTOR_MODE == 0 && !gap) impact = sqrtf(a2) >= IMPACT_G;
+            if (DETECTOR_MODE == 1 && !gap) {
                 float acceleration_g = sqrtf(a2);
                 if (acceleration_g >= IMPACT_G) {
                     below_impact_samples = 0;
@@ -309,7 +318,7 @@ static void control_task(void *arg)
                     }
                 }
             }
-            if (RUN_MONITOR && !gap) {
+            if (RUN_MONITOR && DETECTOR_MODE == 1 && !gap) {
                 float physical_sample[6] = {
                     sample.axis[0] / mpu6050_accel_scale(),
                     sample.axis[1] / mpu6050_accel_scale(),
@@ -367,12 +376,12 @@ static void control_task(void *arg)
             }
         }
         if (state.state == IDLE && before != IDLE) {
-            ai_detector_reset();
+            if (DETECTOR_MODE == 1) ai_detector_reset();
             ai_session_active = false;
         }
         if (ai_session_active && state.state == IDLE &&
             now - ai_armed_at >= (int64_t)CANDIDATE_TIMEOUT_MS * 1000) {
-            ai_detector_reset();
+            if (DETECTOR_MODE == 1) ai_detector_reset();
             ai_session_active = false;
             ESP_LOGI(TAG, "AI candidate window expired without confirmed fall");
         }
@@ -399,7 +408,7 @@ static void control_task(void *arg)
                 pending_at_us = 0; pending_timestamp = 0;
                 state_event_queued(&state);
                 if (state.state == IDLE || state.state == REPORTED) {
-                    ai_detector_reset();
+                    if (DETECTOR_MODE == 1) ai_detector_reset();
                     ai_session_active = false;
                 }
                 buzzer(false);
@@ -432,9 +441,9 @@ static void start_firmware(void)
     if (RUN_MONITOR && !P4_SPEC_CONFIRMED) {
         ESP_LOGE(TAG, "Confirm sensor/detector parameters with P4 before RUN_MONITOR"); return;
     }
-    ESP_LOGW(TAG, "Initializing dilated_aug_s0 INT8 model; verify MPU6050 lower-back orientation before real use");
+    ESP_LOGW(TAG, "Detector mode=%d (0=temporary threshold, 1=unverified INT8)", DETECTOR_MODE);
     ESP_ERROR_CHECK(mpu6050_init());
-    if (RUN_MONITOR && !ai_detector_init()) {
+    if (RUN_MONITOR && DETECTOR_MODE == 1 && !ai_detector_init()) {
         ESP_LOGE(TAG, "AI model initialization or golden test failed"); return;
     }
     sample_queue = xQueueCreate(32, sizeof(imu_sample_t));
@@ -462,9 +471,11 @@ static void start_firmware(void)
     if (xTaskCreate(control_task, "control", 8192, NULL, 4, NULL) != pdPASS) abort();
     if (xTaskCreate(sample_task, "sample", 3072, NULL, 5, NULL) != pdPASS) abort();
     // Stream task: chỉ khởi động khi muốn xem sóng (có thể bắt đầu dù ở chế độ nào).
+#if DEBUG_STREAM
     stream_queue = xQueueCreate(32, sizeof(imu_sample_t));
     if (!stream_queue) abort();
     if (xTaskCreate(stream_task, "stream", 3072, NULL, 1, NULL) != pdPASS) abort();
+#endif
     ESP_LOGI(TAG, "Sampling %d Hz", SAMPLE_HZ);
     ESP_LOGI(TAG, "DEVICE_READY");
 }
