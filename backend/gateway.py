@@ -246,6 +246,13 @@ def escalated_monitor():
                     if chat:
                         send_telegram(chat, msg)
                         
+                plan_logs = contract.events.PlanCreated.get_logs(from_block=last_block, to_block=current_block)
+                if plan_logs:
+                    print("New CarePlan created, resetting false alarms count...")
+                    with closing(sqlite3.connect(DB_FILE)) as conn:
+                        conn.execute('DELETE FROM events WHERE event_type = 3')
+                        conn.commit()
+                        
                 last_block = current_block + 1
         except Exception as e:
             print(f"[escalated_monitor] Error: {e}")
