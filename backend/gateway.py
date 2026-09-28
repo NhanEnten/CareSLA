@@ -1,3 +1,4 @@
+from contextlib import closing
 import os
 import time
 import json
@@ -250,12 +251,7 @@ def escalated_monitor():
             print(f"[escalated_monitor] Error: {e}")
 
 def get_on_duty(plan_id, ts):
-    if contract:
-        try:
-            contract.functions.getOnDuty(plan_id, ts).call()
-        except Exception as e:
-            print(f"[getOnDuty] Chain call failed: {e}")
-            
+    # Danh sách chat đã cấu hình; đường cảnh báo không gọi RPC đồng bộ.
     return {
         "primary": os.getenv("TELEGRAM_CHAT_PRIMARY"),
         "backup": os.getenv("TELEGRAM_CHAT_BACKUP"),
@@ -269,6 +265,7 @@ def handle_fall(device, ts, nonce, data_hash, sig_hex, t_received):
     primary_chat = chats["primary"]
     if primary_chat:
         success = send_telegram(primary_chat, f"🚨 TÉ NGÃ PHÁT HIỆN! Thiết bị: {device}, Nonce: {nonce}")
+        print(f"ALERT_DISPATCH elapsed_ms={(time.time() - t_received) * 1000:.1f} telegram_ok={success}")
         t_telegram_ok = time.time() if success else None
         conn = sqlite3.connect(DB_FILE)
         c = conn.cursor()
@@ -335,6 +332,18 @@ def recover_signer(device, event_type, timestamp, nonce, data_hash_hex, sig_hex)
         print(f"Signature recovery error: {e}")
         return None
 
+def verify_raw_hash(device, nonce, samples_b64, data_hash):
+    try:
+        raw = base64.b64decode(samples_b64, validate=True)
+        if not raw or len(raw) % 12:
+            raise ValueError("raw phải gồm các mẫu 6 số int16")
+        valid = bytes(Web3.keccak(raw)) == bytes.fromhex(data_hash.removeprefix("0x"))
+    except (ValueError, TypeError):
+        valid = False
+    print(f"{'Raw hash OK' if valid else 'Warning: dataHash mismatch'} for {device} nonce {nonce}")
+    return valid
+
+
 def on_message(client, userdata, msg):
     try:
         t_received = time.time()
@@ -383,10 +392,7 @@ def on_message(client, userdata, msg):
 
             if row:
                 samples_b64 = row[0]
-                raw_bytes = base64.b64decode(samples_b64)
-                calc_hash = Web3.keccak(raw_bytes).hex()
-                if not data_hash.endswith(calc_hash[2:]):
-                    print(f"Warning: dataHash mismatch for {device} nonce {nonce}")
+                verify_raw_hash(device, nonce, samples_b64, data_hash)
 
             if event_type == 1:
                 handle_fall(device, ts, nonce, data_hash, sig, t_received)
@@ -413,7 +419,11 @@ def on_message(client, userdata, msg):
                 VALUES (?, ?, ?, ?)
             ''', (device, nonce, samples_b64, t_received))
             conn.commit()
+            c.execute('SELECT data_hash FROM events WHERE device=? AND nonce=? AND event_type IN (1, 2)', (device, nonce))
+            hashes = c.fetchall()
             conn.close()
+            for (data_hash,) in hashes:
+                verify_raw_hash(device, nonce, samples_b64, data_hash)
 
             # --- PHƯƠNG ÁN DỰ PHÒNG AI (GIAI ĐOẠN 3) ---
             # Dùng nếu ESP32 không đủ tài nguyên chạy model
@@ -452,23 +462,34 @@ def on_message(client, userdata, msg):
     except Exception as e:
         print(f"Error in on_message: {e}")
 
+# Chỉ thread heartbeat sở hữu trạng thái này, tránh cảnh báo lặp mỗi vòng.
+heartbeat_lost = set()
+
+def check_heartbeats(now=None):
+    now = time.time() if now is None else now
+    with closing(sqlite3.connect(DB_FILE)) as conn:
+        rows = conn.execute('SELECT device, t_received FROM heartbeats').fetchall()
+    for device, received in rows:
+        lost = now - received > 120
+        if lost and device not in heartbeat_lost:
+            heartbeat_lost.add(device)
+            message = f"HEARTBEAT LOST: {device} quá 120s"
+        elif not lost and device in heartbeat_lost:
+            heartbeat_lost.remove(device)
+            message = f"HEARTBEAT RESTORED: {device} đã kết nối lại"
+        else:
+            continue
+        print(message)
+        chats = get_on_duty(PLAN_ID, int(now))
+        for chat in dict.fromkeys([chats["center"], chats["family"]]):
+            if chat:
+                send_telegram(chat, message)
+
 def heartbeat_monitor():
     while True:
         time.sleep(10)
-        now = time.time()
-        conn = sqlite3.connect(DB_FILE)
-        c = conn.cursor()
-        c.execute('SELECT device, t_received FROM heartbeats')
-        rows = c.fetchall()
-        conn.close()
-        
-        for device, t_received in rows:
-            if now - t_received > 120:
-                print(f"HEARTBEAT LOST for {device}!")
-                chats = get_on_duty(PLAN_ID, int(now))
-                for chat in [chats["center"], chats["family"]]:
-                    if chat:
-                        send_telegram(chat, f"⚠️ Mất kết nối thiết bị {device} quá 120s!")
+        check_heartbeats()
+
 
 def metrics_monitor():
     metrics_file = os.path.join(os.path.dirname(__file__), '..', 'dashboard', 'metrics.json')

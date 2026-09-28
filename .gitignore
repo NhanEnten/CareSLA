@@ -37,3 +37,6 @@ iot_code/sdkconfig.old
 *.log
 contracts/coverage.json
 contracts/gas-report.txt
+.local/
+dashboard/metrics.json
+dashboard/metrics.json.tmp

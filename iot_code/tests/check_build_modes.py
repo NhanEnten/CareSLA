@@ -25,12 +25,12 @@ def build(name):
         raise RuntimeError(f"Build {name} failed")
 
 try:
-    for name, monitor, passive in [("standalone", 0, 0), ("monitor_active", 1, 0), ("monitor_passive", 1, 1)]:
+    for name, monitor, passive, detector, button in [("standalone", 0, 0, 0, 5), ("threshold_boot", 1, 0, 0, 0), ("ai_active", 1, 0, 1, 5), ("threshold_passive", 1, 1, 0, 5)]:
         if config.read_bytes() != current:
             raise RuntimeError("config.h changed externally; stop to preserve user edits")
         text = original.decode("utf-8")
-        values = {"PIN_SDA": 21, "PIN_SCL": 22, "PIN_BUTTON": 23, "PIN_BUZZER": 25,
-                  "RUN_MONITOR": monitor, "P4_SPEC_CONFIRMED": 1, "BUZZER_PASSIVE": passive}
+        values = {"PIN_SDA": 21, "PIN_SCL": 22, "PIN_BUTTON": button, "PIN_BUZZER": 25,
+                  "DETECTOR_MODE": detector, "DEBUG_STREAM": 0, "RUN_MONITOR": monitor, "P4_SPEC_CONFIRMED": 1, "BUZZER_PASSIVE": passive}
         for key, value in values.items():
             text = re.sub(rf"(?m)^#define {key}\s+[^\r\n]+", f"#define {key} {value}", text)
         current = text.encode("utf-8")

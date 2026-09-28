@@ -108,7 +108,7 @@ esp_err_t net_start(const char *device)
         .broker.address.uri = MQTT_BROKER_URI,
         .credentials.client_id = device_addr,
         .outbox.limit = 32768,
-        .buffer.size = 4096,
+        .buffer.size = 8192,
     };
     client = esp_mqtt_client_init(&mqtt);
     if (!client) return ESP_ERR_NO_MEM;

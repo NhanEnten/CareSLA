@@ -8,7 +8,7 @@ Contract giữ ETH ký quỹ, xác thực thiết bị, cam kết lịch trực,
 
 Đồng bộ với main `22ae021`, AGENTS.md và IC-01…IC-15 đã chốt. Bộ kiểm thử đạt **66 JavaScript** (38 nghiệp vụ P2, 24 chữ ký P1 dùng vector P5, 4 helper/toolchain) và **20 unit keeper**. Deploy/setup local và đọc chain bằng keeper đã chạy; xem [báo cáo P2](docs/report/P2_trien_khai_kiem_thu.md).
 
-Chưa nghiệm thu end-to-end 3 lần, chưa deploy/verify Sepolia. Dashboard hiện mới có README/ABI; firmware/model chưa có trong bản main này. Không coi kết quả test contract là hoàn thành hệ thống.
+Main đã tích hợp firmware, model INT8, gateway và dashboard. Xem [tiến độ P6](docs/progress/P6.md) cho kiểm chứng mới nhất; chưa deploy/verify Sepolia. Không coi kết quả test contract là hoàn thành hệ thống.
 
 ## Thư mục và phụ trách
 
@@ -16,7 +16,7 @@ Chưa nghiệm thu end-to-end 3 lần, chưa deploy/verify Sepolia. Dashboard hi
 - `contracts/test/`, `contracts/scripts/`, cấu hình Hardhat: P2.
 - `backend/keeper.py`, `deployments/`, README và tài liệu P2: P2.
 - `backend/gateway.py`, `backend/requirements.txt`, `dashboard/`, `tools/`, vector chuẩn: P5.
-- `iot_code/`: P3; `ai_model/`: P4 (chờ bàn giao).
+- `iot_code/`: P3; `ai_model/`: P4.
 - `docs/progress/Px.md`, `docs/study/Px_on_phan_bien.md`: tiến độ và ôn phản biện.
 
 ## Chuẩn bị và kiểm thử
@@ -94,10 +94,10 @@ Từ gốc repo, sau khi cấu hình MQTT, Telegram, ABI/deployment và ví gate
 
 ```powershell
 .venv\Scripts\python.exe backend/gateway.py
-.venv\Scripts\python.exe -m http.server 8000 --directory dashboard
+.venv\Scripts\python.exe -m http.server 8000
 ```
 
-Đây là lệnh khởi chạy dự kiến, **chưa nghiệm thu E2E**. Gateway của P5 còn cần hoàn thiện/tích hợp; dashboard hiện chưa có giao diện để sử dụng ở localhost:8000. Không mở dashboard bằng `file://`. P3 cần bàn giao dự án ESP-IDF, cổng thiết bị và lệnh build/flash/monitor đã kiểm tra; P4 cần bàn giao model INT8 và `ai_input_spec.md`. Chưa có đủ đầu vào để xác nhận lệnh nạp firmware.
+Mở **http://127.0.0.1:8000/dashboard/**. HTTP server phải đứng ở gốc repo để phục vụ cả `deployments/`; không mở bằng `file://`. Firmware và model đã có, xem `iot_code/README.md`. Kết quả kiểm thử phần mềm và giới hạn phần cứng được ghi riêng trong `docs/progress/P6.md`.
 
 ## Sepolia — chỉ làm sau baseline local
 
