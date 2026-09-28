@@ -133,6 +133,17 @@ async function openPlan(value) {
     $('settle-balances').textContent = '';
     await refresh();
 }
+// Bỏ hợp đồng đang mở để tạo hợp đồng khác (dữ liệu trên chain không đổi)
+function newPlan() {
+    planId = null; plan = null; shifts = [];
+    $('open-plan').value = '';
+    const url = new URL(location.href); url.searchParams.delete('plan');
+    history.replaceState(null, '', url);
+    try { localStorage.removeItem('caresla.setup.plan'); } catch (_) { /* bỏ qua */ }
+    for (const id of ['proof-1', 'proof-2', 'proof-3', 'proof-4', 'create-balances', 'settle-balances', 'plan-summary', 'checklist', 'gateway-hint']) $(id).textContent = '';
+    $('shifts-body').replaceChildren();
+    message('Đã bỏ hợp đồng đang mở. Dùng ví gia đình để tạo hợp đồng mới.');
+}
 function proof(log) {
     return log ? `✅ Tx ${short(log.transactionHash)} · block ${log.blockNumber}` : '';
 }
@@ -175,7 +186,7 @@ function render() {
     const enable = (id, condition) => { $(id).disabled = busy || !local || !condition; };
     // Mạng sai khóa mọi nút; chainChanged tự phục hồi khi chuyển về local.
     $('connect-btn').disabled = busy || unsupported;
-    enable('open-btn', true); enable('create-btn', !planId && family);
+    enable('open-btn', true); enable('new-btn', !!planId); enable('create-btn', !planId && family);
     const active = plan && !plan.settled && chainTime < Number(plan.periodEnd);
     enable('accept-btn', active && !plan.accepted && provider);
     enable('defaults-btn', active && plan.accepted && provider);
@@ -280,7 +291,7 @@ function init() {
     $('provider-address').addEventListener('input', render);
     $('connect-btn').addEventListener('click', () => connectWallet());
     const handlers = {
-        'open-btn': () => openPlan($('open-plan').value), 'create-btn': createPlan,
+        'open-btn': () => openPlan($('open-plan').value), 'new-btn': newPlan, 'create-btn': createPlan,
         'accept-btn': () => send('acceptPlan', [planId]), 'defaults-btn': defaults,
         'shift-btn': () => send('commitShift', shiftArgs(seconds('shift-start'))), 'past-btn': pastShift,
         'copy-btn': async () => { await navigator.clipboard.writeText(`PLAN_ID=${planId}`); message('Đã copy PLAN_ID.'); },

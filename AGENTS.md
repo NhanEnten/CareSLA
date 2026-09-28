@@ -47,7 +47,7 @@ IDLE → phát hiện va chạm (AI) → kiểm tra bất động N giây → **
 - Ký quỹ bằng **ETH gốc** (Sepolia ETH hoặc ETH trên Hardhat).
 - **Keeper bằng Python** gọi `checkTimeout()`.
 - AI: mô hình nhẹ lấy cảm hứng từ TinyFallNet, lượng tử **INT8**, chạy trên ESP32 bằng TFLite Micro.
-- Dashboard tối giản: danh sách sự cố, trạng thái SLA, nút xác nhận qua MetaMask, link Etherscan.
+- Dashboard tối giản: danh sách sự cố, trạng thái SLA, nút xác nhận qua MetaMask, link Etherscan. Thêm trang `setup.html` (chỉ Hardhat local) để tạo hợp đồng, chấp nhận, cam kết ca, tua giờ và chia tiền khi demo (IC-18).
 - Heartbeat thiết bị: chỉ giám sát off-chain ở gateway.
 
 **KHÔNG LÀM (đã cắt có chủ đích):**

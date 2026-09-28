@@ -190,7 +190,7 @@
 - **Hệ quả cho báo cáo:** không còn số "độ trễ Telegram"; thay bằng độ trễ MQTT → gateway (`ALERT_DISPATCH`) và độ trễ thiết bị (bất động 2 s + cửa sổ hủy 10 s theo thiết kế).
 
 ## IC-18. Trang thiết lập dashboard và demo local 10 phút
-- **Người đề xuất:** P1 giao P6 qua `prompts/P6_dashboard_demo_10phut.md` ngày 2026-09-28. **Trạng thái: CHỜ CHỐT**.
+- **Người đề xuất:** P1 giao P6 qua `prompts/P6_dashboard_demo_10phut.md` ngày 2026-09-28. **Trạng thái: ĐÃ CHỐT** (P1, 2026-09-28): giữ **SLA 60 giây** như AGENTS.md 6.4 (kịch bản đầy đủ vẫn chỉ ~3 phút); mặc định ký quỹ 100 ETH / phạt 20 ETH (chốt lần 16); thêm nút "Hợp đồng mới".
 - Mở rộng dashboard tối giản ở mục 4 bằng `setup.html` / `setup.js`: tạo hợp đồng và khóa ETH, chấp nhận, cam kết ca trước, mở giám sát và kết thúc demo. Giữ trang giám sát, chỉ thêm một link; CSS mới chỉ áp dụng trang thiết lập.
 - Đề xuất SLA demo **30 giây**, khác **60 giây** tại AGENTS.md mục 6.4. Trong khi chưa có xác nhận chốt của nhóm, trang giữ mặc định 60 giây; ô SLA vẫn là tham số hợp đồng có thể nhập. Không sửa mục 6 hoặc contract.
 - Nút tua giờ chỉ cho chainId 31337, xác nhận trước khi tăng tới `periodEnd + 601`; ảnh hưởng toàn node, khiến timestamp thiết bị dùng giờ thật bị từ chối. Chỉ dùng cuối demo. Không có giao dịch thật trên Sepolia/mainnet.

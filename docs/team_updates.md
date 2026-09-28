@@ -7,6 +7,13 @@
 
 ---
 
+## [2026-09-28, lần 17] ✅ Đã merge `p6` (`3f341c9`): trang thiết lập hợp đồng · IC-18 ĐÃ CHỐT
+- **Mới:** `dashboard/setup.html` (link "Thiết lập hợp đồng" trên trang giám sát): ① gia đình tạo hợp đồng, khóa ký quỹ → ② trung tâm chấp nhận → ③ cam kết ca (nút "Thử sửa ca đã qua": contract từ chối, không tạo giao dịch) → ④ mở giám sát; khu "Kết thúc demo" có nút ⏩ tua giờ (chỉ Hardhat local) và Settle, hiện số dư trước/sau. Chỉ chạy ở chainId 31337. Trang giám sát không đổi (`app.js` giữ nguyên).
+- **P1 sửa khi merge:** mặc định ký quỹ **100 ETH**, phạt **20 ETH** (theo lần 16); thêm nút **"Hợp đồng mới"** để tạo hợp đồng khác khi trang đang mở một hợp đồng.
+- **IC-18 ĐÃ CHỐT:** giữ **SLA 60 giây**. P6 đo kịch bản tự động đầy đủ (CANCEL, FALL xác nhận kịp, FALL để 2 cấp, tua giờ, settle) mất ~2 phút 50 giây.
+- **P1 chạy lại** `setup.js` trên Hardhat local với ví giả thay MetaMask: ①→④, từ chối ca quá khứ, tua giờ, settle, "Hợp đồng mới" rồi tạo hợp đồng #2 đều đạt. Chưa thử bằng MetaMask thật.
+- **Demo:** trước giờ demo chỉ `deploy:local`, **không** chạy `demo-setup`, để hợp đồng tạo trên web là planId 1 khớp `.env`. Chi tiết: `docs/demo_runbook.md`.
+
 ## [2026-09-28, lần 16] ✅ Chốt ký quỹ demo 100 ETH / phạt 20 ETH (Hardhat local)
 - Trưởng nhóm chốt: `demo_setup.js` dùng **100 ETH ký quỹ, 20 ETH phạt mỗi vi phạm trên localhost** (số tròn để thuyết trình). Trên **Sepolia tự dùng 0.01 / 0.002 ETH** vì faucet không đủ. Thay thế cảnh báo ở lần 11.
 - Số dư khi demo (ví Hardhat 10.000 ETH): gia đình −100 lúc tạo hợp đồng, contract giữ 100. Settle: phạt = min(vi phạm × 20, 100); **2 vi phạm → gia đình nhận 40, trung tâm 60**; ≥ 5 vi phạm thì gia đình nhận đủ 100. Nhân viên, gateway, keeper chỉ tốn gas.

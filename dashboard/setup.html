@@ -18,7 +18,7 @@
   <p id="setup-message" role="status" aria-live="polite">Kết nối ví Hardhat Local để bắt đầu.</p>
   <section class="glass plan-info">
     <label for="open-plan">Mở hợp đồng có sẵn (planId)</label>
-    <div class="action-row"><input id="open-plan" type="number" min="1" step="1"><button id="open-btn" class="btn primary-btn" disabled>Mở hợp đồng</button></div>
+    <div class="action-row"><input id="open-plan" type="number" min="1" step="1"><button id="open-btn" class="btn primary-btn" disabled>Mở hợp đồng</button><button id="new-btn" class="btn" disabled>Hợp đồng mới</button></div>
     <p id="chain-clock">Giờ chain: —</p>
   </section>
   <nav class="setup-progress" aria-label="Tiến trình"><span id="progress-1">① Tạo hợp đồng</span><span id="progress-2">② Chấp nhận</span><span id="progress-3">③ Cam kết ca</span><span id="progress-4">④ Giám sát</span></nav>
@@ -28,8 +28,8 @@
       <label>Địa chỉ trung tâm (ví #2)<input id="provider-address" autocomplete="off" value="0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"></label>
       <label>Địa chỉ thiết bị<input id="device-address" autocomplete="off" placeholder="0x…"></label>
       <label>SLA (giây)<input id="sla" type="number" min="1" step="1" value="60"></label>
-      <label>Mức phạt (ETH)<input id="penalty" inputmode="decimal" value="0.2"></label>
-      <label>Ký quỹ (ETH)<input id="deposit" inputmode="decimal" value="1"></label>
+      <label>Mức phạt (ETH)<input id="penalty" inputmode="decimal" value="20"></label>
+      <label>Ký quỹ (ETH)<input id="deposit" inputmode="decimal" value="100"></label>
       <label>Kết thúc kỳ<input id="period-end" type="datetime-local" step="1"><span id="period-remaining"></span></label>
     </div>
     <button id="create-btn" class="btn primary-btn" disabled>Tạo hợp đồng và khóa ký quỹ</button>
