@@ -1,0 +1,41 @@
+[
+  {
+    "run": 1,
+    "result": "PASS",
+    "contract": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "violations": 2,
+    "status": 2,
+    "refundWei": 4000000000000000,
+    "providerWei": 6000000000000000,
+    "settleTx": "a3e0c01d7c6d52debd02ece2879edf311655ea35416f0dab9d44bd2d665c7eb3",
+    "alertLogMs": 20.2,
+    "rpcOutageRetry": "PASS",
+    "telegram": "log fallback; no real Telegram measurement"
+  },
+  {
+    "run": 2,
+    "result": "PASS",
+    "contract": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "violations": 2,
+    "status": 2,
+    "refundWei": 4000000000000000,
+    "providerWei": 6000000000000000,
+    "settleTx": "a4916ca1e1e4856cbd6fc735858effd1fdec76f3d107158ac2eb44e7ffc101c4",
+    "alertLogMs": 55.7,
+    "rpcOutageRetry": "PASS",
+    "telegram": "log fallback; no real Telegram measurement"
+  },
+  {
+    "run": 3,
+    "result": "PASS",
+    "contract": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "violations": 2,
+    "status": 2,
+    "refundWei": 4000000000000000,
+    "providerWei": 6000000000000000,
+    "settleTx": "e0f418ace2383c3f7d8a0ce75d892007a0a471a6add5152526b8f1043bde1d82",
+    "alertLogMs": 47.5,
+    "rpcOutageRetry": "PASS",
+    "telegram": "log fallback; no real Telegram measurement"
+  }
+]
