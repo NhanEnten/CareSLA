@@ -25,8 +25,6 @@ async function loadMetrics() {
         if (res.ok) {
             const data = await res.json();
             document.getElementById('metrics-section').style.display = 'grid';
-            document.getElementById('metric-avg-lat').innerText = `${data.avg_telegram_latency_ms || '--'} ms`;
-            document.getElementById('metric-max-lat').innerText = `${data.max_telegram_latency_ms || '--'} ms`;
             document.getElementById('metric-false-alarms').innerText = data.false_alarm_count || '0';
             
             const hbCount = data.last_heartbeat ? Object.keys(data.last_heartbeat).length : 0;
