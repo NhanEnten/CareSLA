@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 import runpy
 import socket
+import shutil
 import subprocess
 import sys
 import threading
@@ -85,6 +86,13 @@ def main():
                       TELEGRAM_CHAT_PRIMARY='', TELEGRAM_CHAT_BACKUP='', TELEGRAM_CHAT_FAMILY='',
                       TELEGRAM_CHAT_PROVIDER='')
         gw_env['P6_TEST_RPC'] = rpc_url
+        # Gateway ghi metrics theo __file__; chạy bản sao nguyên vẹn trong fixture
+        # để metrics của node demo người dùng không bị thay bởi thiết bị test.
+        (work / 'backend/abi').mkdir(parents=True)
+        (work / 'dashboard').mkdir()
+        shutil.copyfile(ROOT / 'backend/gateway.py', work / 'backend/gateway.py')
+        shutil.copyfile(ROOT / 'backend/abi/CareSLA.json', work / 'backend/abi/CareSLA.json')
+        gw_env['P6_TEST_GATEWAY'] = str(work / 'backend/gateway.py')
         start([sys.executable, str(Path(__file__).resolve()), '--gateway-test'], 'gateway.log', work, gw_env)
         wait_for(lambda: 'Subscribed to MQTT' in (work / 'gateway.log').read_text(encoding='utf-8'))
         keeper = Keeper(w3, contract, deployment, Account.from_key(keys[6]))
@@ -124,6 +132,6 @@ if __name__ == '__main__':
         original_provider = Web3.HTTPProvider
         Web3.HTTPProvider = lambda url, *a, **kw: original_provider(
             os.environ['P6_TEST_RPC'] if url == 'http://127.0.0.1:8545' else url, *a, **kw)
-        runpy.run_path(str(ROOT / 'backend/gateway.py'), run_name='__main__')
+        runpy.run_path(os.environ['P6_TEST_GATEWAY'], run_name='__main__')
     else:
         main()
