@@ -7,6 +7,14 @@
 
 ---
 
+## [2026-09-28, lần 13] ✅ Đã merge nhánh `p6` (commit `27ebd46`)
+- **Có gì mới:** `secrets.h.example`; `DETECTOR_MODE` (0 = ngưỡng, 1 = AI) và `DEBUG_STREAM` trong `iot_code/main/config.h`; buffer MQTT 8192; CMake không áp patch TFLite lặp; gateway so `dataHash` ở cả hai thứ tự `event`/`raw`, cảnh báo heartbeat 1 lần mỗi đợt + báo khôi phục, đường cảnh báo không gọi RPC; `tools/fake_device.py` (ESP32 giả), `tools/check_local_e2e.py` (E2E 3 vòng), `tools/test_p6_gateway.py`; `docs/demo_runbook.md`; README chạy dashboard từ gốc repo. Dashboard **không đổi** (giữ giao diện P5 ngày 28/09).
+- **P1 chạy lại sau merge:** 66 test contract, 20 unit keeper, 4 test gateway P6, `state_test` đều đạt. P6 báo E2E phần mềm 3 vòng PASS và ESP32 thật đã gửi CANCEL, FALL lên chain local; **chưa** có ARRIVAL bằng nút thật, Telegram thật, video.
+- ⚠️ **Cần nhóm quyết định:**
+  1. `config.h` đang commit `DETECTOR_MODE 1` + `DEBUG_STREAM 1` (P6 giữ cấu hình thử nghiệm). AI trên board **chưa khớp golden**, app partition chỉ còn ~3 %, và topic `stream` là IC-16 chưa chốt. **Đề xuất cho demo baseline: `DETECTOR_MODE 0`, `DEBUG_STREAM 0`.**
+  2. Progress P6 ghi "nhóm quyết định bỏ Telegram". Điều này **đổi luồng cảnh báo trong AGENTS.md mục 3** (ESP32 → MQTT → Gateway → Telegram), cần trưởng nhóm chốt. Code gateway vẫn gửi Telegram nếu điền `TELEGRAM_BOT_TOKEN`/chat ID. Nếu không dùng Telegram, gateway hiện **không in dòng `ALERT_DISPATCH`** (chỉ in khi có chat primary), nên không đo được độ trễ cảnh báo.
+- Lưu ý nhỏ: `fake_device.py` lấy `timestamp` theo đồng hồ máy; nếu đã tua giờ Hardhat (`evm_increaseTime`) thì FALL sẽ bị từ chối `ts too old`, phải khởi động lại node.
+
 ## [2026-09-28, lần 12] Đã merge `p4-ai` (commit `1898eab`): notebook huấn luyện
 - Thêm notebook Kaggle huấn luyện model (không có khóa/token). P1 đã chuyển từ gốc repo vào **`ai_model/Model_AI_nhom3.ipynb`** cho đúng AGENTS.md mục 7. **P4:** `git pull` trước khi sửa tiếp.
 - Notebook bổ sung 2 thứ còn thiếu: **code huấn luyện** (chia theo subject, split cố định seed 42, config `dilated_aug` seed 0, dừng sớm ở epoch 65, dùng trọng số epoch 35) và **so sánh float vs INT8** trên tập test theo từng lần thử (p=0.7, N=2): cả hai cùng TP 445, FP 23, TN 503, FN 0 (độ nhạy 100 %, độ đặc hiệu 95,6 %); lead time 264,9 ms (float) và 262,0 ms (INT8). Đây là số KFall, **không phải** trên ESP32.
