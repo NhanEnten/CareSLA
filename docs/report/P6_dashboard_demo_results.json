@@ -1,0 +1,102 @@
+{
+  "result": "PASS",
+  "ethers": "6.13.4",
+  "sla": 60,
+  "marks": [
+    {
+      "step": "Tạo hợp đồng, khóa 1 ETH",
+      "seconds": 4.49
+    },
+    {
+      "step": "Chấp nhận",
+      "seconds": 8.94
+    },
+    {
+      "step": "Cam kết ca và từ chối ca quá khứ",
+      "seconds": 9.34
+    },
+    {
+      "step": "Ca bắt đầu, mở giám sát",
+      "seconds": 31.26
+    },
+    {
+      "step": "CANCEL chỉ off-chain",
+      "seconds": 32.9
+    },
+    {
+      "step": "FALL #1, dashboard acknowledge, ARRIVAL không vi phạm",
+      "seconds": 39.73
+    },
+    {
+      "step": "FALL #2, bắt đầu chờ keeper theo giờ thực",
+      "seconds": 41
+    },
+    {
+      "step": "Keeper chuyển cấp 1",
+      "seconds": 101.81
+    },
+    {
+      "step": "Keeper chuyển cấp 2",
+      "seconds": 163.43
+    },
+    {
+      "step": "Tua giờ cuối demo và chia 0.4 / 0.6 ETH",
+      "seconds": 169.43
+    }
+  ],
+  "violations": 2,
+  "refundETH": "0.4",
+  "providerETH": "0.6",
+  "mode": "Timed software rehearsal: real RPC/MQTT/gateway/keeper/fake_device; VM DOM and simulated wallet, not manual MetaMask",
+  "verificationRerun": {
+    "result": "PASS",
+    "ethers": "6.13.4",
+    "sla": 60,
+    "marks": [
+      {
+        "step": "Tạo hợp đồng, khóa 1 ETH",
+        "seconds": 4.48
+      },
+      {
+        "step": "Chấp nhận",
+        "seconds": 8.95
+      },
+      {
+        "step": "Cam kết ca và từ chối ca quá khứ",
+        "seconds": 13.43
+      },
+      {
+        "step": "Ca bắt đầu, mở giám sát",
+        "seconds": 31.21
+      },
+      {
+        "step": "CANCEL chỉ off-chain",
+        "seconds": 32.86
+      },
+      {
+        "step": "FALL #1, dashboard acknowledge, ARRIVAL không vi phạm",
+        "seconds": 39.89
+      },
+      {
+        "step": "FALL #2, bắt đầu chờ keeper theo giờ thực",
+        "seconds": 41.33
+      },
+      {
+        "step": "Keeper chuyển cấp 1",
+        "seconds": 102.79
+      },
+      {
+        "step": "Keeper chuyển cấp 2",
+        "seconds": 163.36
+      },
+      {
+        "step": "Tua giờ cuối demo và chia 0.4 / 0.6 ETH",
+        "seconds": 169.41
+      }
+    ],
+    "violations": 2,
+    "refundETH": "0.4",
+    "providerETH": "0.6",
+    "mode": "Timed software rehearsal: real RPC/MQTT/gateway/keeper/fake_device; VM DOM and simulated wallet, not manual MetaMask"
+  }
+}
