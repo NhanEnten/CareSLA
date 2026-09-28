@@ -7,6 +7,15 @@
 
 ---
 
+## [2026-09-28, lần 12] Đã merge `p4-ai` (commit `1898eab`): notebook huấn luyện
+- Thêm notebook Kaggle huấn luyện model (không có khóa/token). P1 đã chuyển từ gốc repo vào **`ai_model/Model_AI_nhom3.ipynb`** cho đúng AGENTS.md mục 7. **P4:** `git pull` trước khi sửa tiếp.
+- Notebook bổ sung 2 thứ còn thiếu: **code huấn luyện** (chia theo subject, split cố định seed 42, config `dilated_aug` seed 0, dừng sớm ở epoch 65, dùng trọng số epoch 35) và **so sánh float vs INT8** trên tập test theo từng lần thử (p=0.7, N=2): cả hai cùng TP 445, FP 23, TN 503, FN 0 (độ nhạy 100 %, độ đặc hiệu 95,6 %); lead time 264,9 ms (float) và 262,0 ms (INT8). Đây là số KFall, **không phải** trên ESP32.
+- P4 vẫn còn: luật bất động, `docs/ai_data_protocol.md`, `ai_model/infer.py`, báo động giả mỗi giờ.
+
+## [2026-09-28, lần 11] Đã merge `p5-backend` (commit `206813c`, đổi giao diện dashboard)
+- Chỉ đổi màu/CSS, bỏ 2 thẻ độ trễ Telegram, phụ đề và dòng gợi ý cạnh nút Settle. Logic không đổi; bản sửa của P1 (nút Xác nhận ở cấp 2) vẫn còn; mọi `id` JS dùng đều có trong HTML. Gateway **vẫn ghi** độ trễ vào `metrics.json`, nên số liệu cho báo cáo mục 8 không mất.
+- ⚠️ **Có commit đẩy thẳng lên `main`** (`ad6d4e6`, "Update demo_setup.js"): ký quỹ demo đổi 0,01 → **100 ETH**, phạt 0,002 → **20 ETH**. Chạy local vẫn được (ví Hardhat có 10.000 ETH), nhưng **trên Sepolia không thể có 100 ETH** → `setup:sepolia` sẽ thất bại, và README/prompt P6 vẫn ghi 0,01. Người sửa báo lại lý do cho P1; đề xuất trả về 0,01/0,002 hoặc cho chọn theo mạng. Từ nay **không push thẳng `main`**, làm trên nhánh riêng.
+
 ## [2026-09-27, lần 10] P6 — người hoàn thiện code để chạy demo
 - Trưởng nhóm giao **P6** làm hết phần code còn thiếu. Prompt: **`prompts/P6_hoan_thien_demo.md`** (thứ tự đọc, quyền hạn, việc A1–A11 / B1–B4 / C, tiêu chí xong, quy trình chạy demo). AGENTS.md mục 7 đã ghi quyền của P6.
 - P6 làm trên nhánh `p6-finish`, được sửa file của P2–P5 **chỉ cho các việc trong prompt**, mỗi lần sửa ghi vào `docs/progress/P6.md`. Không đổi giao diện mục 6.

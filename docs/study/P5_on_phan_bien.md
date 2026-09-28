@@ -1,5 +1,10 @@
 # Ôn phản biện — P5 (Backend Gateway & Dashboard)
 
+### Cập nhật giao diện 2026-09-28
+Lựa chọn màu mới nhất: nền xám rất nhạt, thẻ trắng, chữ navy, thao tác chính xanh dương; thanh lý dùng đỏ, còn các nhãn Mở/Đã nhận/Đã đến nơi dùng đỏ/vàng cam/xanh lá. Màu chữ trạng thái dùng sắc đậm để dễ đọc; nút vô hiệu hóa dùng xám. Màu chỉ phản ánh trạng thái có sẵn, không thay đổi luật hợp đồng.
+
+Bảng màu được gom trong các biến CSS để dễ thay đổi đồng bộ. Hai thẻ độ trễ và hai dòng mô tả được bỏ theo yêu cầu; `loadMetrics` chỉ cập nhật hai thẻ còn lại để tránh truy cập phần tử DOM đã xóa. Việc bỏ mô tả thanh lý không thay đổi điều kiện xử lý: nút vẫn chỉ bật sau `periodEnd + 600`, khi không còn pending và hợp đồng chưa thanh lý. Đã kiểm tra bằng trình duyệt với dữ liệu mô phỏng; đây không phải kiểm thử giao dịch blockchain thật.
+
 ## 1. Tôi đã làm gì
 Tôi phụ trách xây dựng Gateway (cầu nối) và Dashboard Web3. Gateway nhận dữ liệu từ thiết bị qua MQTT, kiểm tra chữ ký off-chain, gửi cảnh báo khẩn cấp qua Telegram, và đẩy bằng chứng trách nhiệm (reportFall, confirmArrival) lên blockchain qua một hàng đợi an toàn. Dashboard là giao diện để nhân viên bấm nút xác nhận sự cố, theo dõi đếm ngược SLA và quản lý việc thanh lý hợp đồng. Ngoài ra, tôi còn làm script sinh test vector chuẩn và file cấu hình cho cả nhóm.
 

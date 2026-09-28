@@ -36,8 +36,8 @@ async function main(options = {}) {
       || [primary, backup].includes(ethers.ZeroAddress)) {
     throw new Error("Demo cần 4 địa chỉ family/provider/primary/backup khác nhau và khác zero.");
   }
-  const deposit = ethers.parseEther("0.01");
-  const penalty = ethers.parseEther("0.002");
+  const deposit = ethers.parseEther("100");
+  const penalty = ethers.parseEther("20");
   const familyBalance = await ethers.provider.getBalance(family.address);
   const providerBalance = await ethers.provider.getBalance(provider.address);
   console.log(`Family: ${family.address}, balance=${ethers.formatEther(familyBalance)} ETH`);
