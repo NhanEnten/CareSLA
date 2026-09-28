@@ -7,6 +7,10 @@
 
 ---
 
+## [2026-09-28, lần 11] Đã merge `p5-backend` (commit `206813c`, đổi giao diện dashboard)
+- Chỉ đổi màu/CSS, bỏ 2 thẻ độ trễ Telegram, phụ đề và dòng gợi ý cạnh nút Settle. Logic không đổi; bản sửa của P1 (nút Xác nhận ở cấp 2) vẫn còn; mọi `id` JS dùng đều có trong HTML. Gateway **vẫn ghi** độ trễ vào `metrics.json`, nên số liệu cho báo cáo mục 8 không mất.
+- ⚠️ **Có commit đẩy thẳng lên `main`** (`ad6d4e6`, "Update demo_setup.js"): ký quỹ demo đổi 0,01 → **100 ETH**, phạt 0,002 → **20 ETH**. Chạy local vẫn được (ví Hardhat có 10.000 ETH), nhưng **trên Sepolia không thể có 100 ETH** → `setup:sepolia` sẽ thất bại, và README/prompt P6 vẫn ghi 0,01. Người sửa báo lại lý do cho P1; đề xuất trả về 0,01/0,002 hoặc cho chọn theo mạng. Từ nay **không push thẳng `main`**, làm trên nhánh riêng.
+
 ## [2026-09-27, lần 10] P6 — người hoàn thiện code để chạy demo
 - Trưởng nhóm giao **P6** làm hết phần code còn thiếu. Prompt: **`prompts/P6_hoan_thien_demo.md`** (thứ tự đọc, quyền hạn, việc A1–A11 / B1–B4 / C, tiêu chí xong, quy trình chạy demo). AGENTS.md mục 7 đã ghi quyền của P6.
 - P6 làm trên nhánh `p6-finish`, được sửa file của P2–P5 **chỉ cho các việc trong prompt**, mỗi lần sửa ghi vào `docs/progress/P6.md`. Không đổi giao diện mục 6.
