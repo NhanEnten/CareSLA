@@ -60,7 +60,7 @@ function page(file, account, storage = new Map(), query = '') {
         document: { getElementById(id) { assert(nodes.has(id), `HTML thiếu id ${id}`); return nodes.get(id); },
             createElement: element, querySelector() { return nodes.get('events-table'); } },
         window: { ethereum, confirm: () => true, addEventListener(name, fn) { handlers[name] = fn; } },
-        localStorage: { getItem: (key) => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) },
+        localStorage: { getItem: (key) => storage.get(key) || null, setItem: (key, value) => storage.set(key, value), removeItem: (key) => storage.delete(key) },
         history: { replaceState(_a, _b, url) { location.href = String(url); location.search = new URL(url).search; } },
         navigator: { clipboard: { async writeText() {} } }, alert() {},
         setInterval(fn) { timers.push(fn); return timers.length; },
@@ -96,10 +96,10 @@ async function main() {
     p.reject(false);
     await p.click('create-btn');
     assert.equal(await p.run('planId'), '1');
-    assert.equal((await read.getPlan(1)).deposit, ethers.parseEther('1'));
-    assert.match(p.nodes.get('create-balances').textContent, /Số dư contract: 1.0 ETH/);
+    assert.equal((await read.getPlan(1)).deposit, ethers.parseEther('100'));
+    assert.match(p.nodes.get('create-balances').textContent, /Số dư contract: 100\.0 ETH/);
     assert(p.nodes.get('accept-btn').disabled);
-    mark('Tạo hợp đồng, khóa 1 ETH');
+    mark('Tạo hợp đồng, khóa 100 ETH');
     await p.switchAccount(wallets[2]);
     assert.match(p.nodes.get('wallet-role').textContent, /Trung tâm/);
     await p.click('accept-btn');
@@ -117,6 +117,15 @@ async function main() {
     await resumed.start(); await resumed.click('connect-btn');
     assert.equal(await resumed.run('planId'), '1');
     assert.equal(resumed.nodes.get('shifts-body').children.length, 1);
+    await resumed.click('new-btn');
+    assert.equal(await resumed.run('planId'), null);
+    assert.equal(resumed.storage.get('caresla.setup.plan'), undefined);
+    assert.equal(new URL(resumed.run('location.href')).searchParams.get('plan'), null);
+    assert.equal(resumed.nodes.get('shifts-body').children.length, 0);
+    assert.equal((await read.getPlan(1)).shiftCount, 1n);
+    resumed.nodes.get('open-plan').value = '1';
+    await resumed.click('open-btn');
+    assert.equal(await resumed.run('planId'), '1');
     await resumed.switchNetwork('0xaa36a7');
     assert.equal(resumed.nodes.get('setup-message').textContent, 'Trang thiết lập chỉ dùng cho demo local');
     assert(resumed.nodes.get('warp-btn').disabled);
@@ -171,15 +180,15 @@ async function main() {
     const before = await Promise.all([rpc.send('eth_getBalance', [wallets[1], 'latest']), rpc.send('eth_getBalance', [wallets[2], 'latest'])]);
     await p.click('settle-btn');
     const after = await Promise.all([rpc.send('eth_getBalance', [wallets[1], 'latest']), rpc.send('eth_getBalance', [wallets[2], 'latest'])]);
-    assert.equal(BigInt(after[0]) - BigInt(before[0]), ethers.parseEther('0.4'));
-    assert.equal(BigInt(after[1]) - BigInt(before[1]), ethers.parseEther('0.6'));
+    assert.equal(BigInt(after[0]) - BigInt(before[0]), ethers.parseEther('40'));
+    assert.equal(BigInt(after[1]) - BigInt(before[1]), ethers.parseEther('60'));
     assert((await read.getPlan(1)).settled);
-    assert.match(p.nodes.get('settle-balances').textContent, /hoàn gia đình 0.4 ETH; trung tâm 0.6 ETH/);
+    assert.match(p.nodes.get('settle-balances').textContent, /hoàn gia đình 40\.0 ETH; trung tâm 60\.0 ETH/);
     assert(!p.walletCalls.includes('eth_call'), 'Trang thiết lập đọc qua MetaMask');
-    mark('Tua giờ cuối demo và chia 0.4 / 0.6 ETH');
+    mark('Tua giờ cuối demo và chia 40 / 60 ETH');
     assert(marks.at(-1).seconds <= 600);
     fs.writeFileSync(path.join(work, 'results.json'), JSON.stringify({ result: 'PASS', ethers: ethers.version,
-        sla, marks, violations: 2, refundETH: '0.4', providerETH: '0.6',
+        sla, marks, violations: 2, refundETH: '40', providerETH: '60',
         mode: 'Timed software rehearsal: real RPC/MQTT/gateway/keeper/fake_device; VM DOM and simulated wallet, not manual MetaMask',
     }, null, 2));
     console.log('PASS: setup VM, chuyển ví/mạng, khôi phục, MQTT, keeper, dashboard, settlement.');

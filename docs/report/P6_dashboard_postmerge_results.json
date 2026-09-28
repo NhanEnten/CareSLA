@@ -1,0 +1,51 @@
+{
+  "result": "PASS",
+  "ethers": "6.13.4",
+  "sla": 60,
+  "marks": [
+    {
+      "step": "Tạo hợp đồng, khóa 100 ETH",
+      "seconds": 4.47
+    },
+    {
+      "step": "Chấp nhận",
+      "seconds": 8.9
+    },
+    {
+      "step": "Cam kết ca và từ chối ca quá khứ",
+      "seconds": 9.32
+    },
+    {
+      "step": "Ca bắt đầu, mở giám sát",
+      "seconds": 31.15
+    },
+    {
+      "step": "CANCEL chỉ off-chain",
+      "seconds": 32.73
+    },
+    {
+      "step": "FALL #1, dashboard acknowledge, ARRIVAL không vi phạm",
+      "seconds": 39.86
+    },
+    {
+      "step": "FALL #2, bắt đầu chờ keeper theo giờ thực",
+      "seconds": 41.11
+    },
+    {
+      "step": "Keeper chuyển cấp 1",
+      "seconds": 101.83
+    },
+    {
+      "step": "Keeper chuyển cấp 2",
+      "seconds": 163.39
+    },
+    {
+      "step": "Tua giờ cuối demo và chia 40 / 60 ETH",
+      "seconds": 169.41
+    }
+  ],
+  "violations": 2,
+  "refundETH": "40",
+  "providerETH": "60",
+  "mode": "Timed software rehearsal: real RPC/MQTT/gateway/keeper/fake_device; VM DOM and simulated wallet, not manual MetaMask"
+}
