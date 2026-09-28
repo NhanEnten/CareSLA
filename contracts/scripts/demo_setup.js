@@ -36,8 +36,10 @@ async function main(options = {}) {
       || [primary, backup].includes(ethers.ZeroAddress)) {
     throw new Error("Demo cần 4 địa chỉ family/provider/primary/backup khác nhau và khác zero.");
   }
-  const deposit = ethers.parseEther("100");
-  const penalty = ethers.parseEther("20");
+  // Local: số tròn để thuyết trình (2 vi phạm → gia đình 40, trung tâm 60). Sepolia không có đủ ETH faucet.
+  const local = hre.network.name === "localhost";
+  const deposit = ethers.parseEther(local ? "100" : "0.01");
+  const penalty = ethers.parseEther(local ? "20" : "0.002");
   const familyBalance = await ethers.provider.getBalance(family.address);
   const providerBalance = await ethers.provider.getBalance(provider.address);
   console.log(`Family: ${family.address}, balance=${ethers.formatEther(familyBalance)} ETH`);

@@ -7,6 +7,11 @@
 
 ---
 
+## [2026-09-28, lần 16] ✅ Chốt ký quỹ demo 100 ETH / phạt 20 ETH (Hardhat local)
+- Trưởng nhóm chốt: `demo_setup.js` dùng **100 ETH ký quỹ, 20 ETH phạt mỗi vi phạm trên localhost** (số tròn để thuyết trình). Trên **Sepolia tự dùng 0.01 / 0.002 ETH** vì faucet không đủ. Thay thế cảnh báo ở lần 11.
+- Số dư khi demo (ví Hardhat 10.000 ETH): gia đình −100 lúc tạo hợp đồng, contract giữ 100. Settle: phạt = min(vi phạm × 20, 100); **2 vi phạm → gia đình nhận 40, trung tâm 60**; ≥ 5 vi phạm thì gia đình nhận đủ 100. Nhân viên, gateway, keeper chỉ tốn gas.
+- Đã cập nhật: `contracts/scripts/demo_setup.js` + `demo_task.js` (P2), `README.md`, `prompts/P6_dashboard_demo_10phut.md` (mặc định trang thiết lập 100 / 20). Unit test dùng số riêng, không đổi; 66 test vẫn đạt. P1 chạy thử setup local: plan ký quỹ 100, phạt 20, contract giữ 100 ETH.
+
 ## [2026-09-28, lần 15] Việc mới cho P6: trang thiết lập hợp đồng + demo 10 phút
 - Prompt: **`prompts/P6_dashboard_demo_10phut.md`**. P6 thêm `dashboard/setup.html` + `setup.js`: ① gia đình tạo hợp đồng (khóa ký quỹ) → ② trung tâm chấp nhận → ③ cam kết ca trực (có thử sửa ca về quá khứ để thấy contract từ chối) → ④ mở giám sát; nút tua giờ **chỉ Hardhat local** để demo chia tiền (contract bắt chờ `periodEnd + 600 s`).
 - Giữ nguyên giao diện trang giám sát (chỉ thêm 1 link). Không sửa contract, gateway, keeper, firmware. SLA demo mặc định 30 s để trọn kịch bản trong 10 phút (ghi IC-18, chờ chốt).

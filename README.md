@@ -61,7 +61,7 @@ npm run deploy:local
 npm run setup:local -- --device 0xDIA_CHI_THIET_BI
 ```
 
-Thay địa chỉ mẫu bằng địa chỉ P3 cung cấp. Có thể bỏ `--device` nếu `REGISTERED_DEVICES` chỉ chứa một địa chỉ. Setup dùng tài khoản local #1 family, #2 provider, #3 primary, #4 backup; tạo plan 2 giờ, ký quỹ 0.01 ETH, SLA 60 giây, phạt 0.002 ETH/lần, 2 ca liên tiếp bắt đầu sau khoảng 60 giây. Chép `PLAN_ID` được in vào `.env`; chỉ phát FALL sau thời điểm ca bắt đầu.
+Thay địa chỉ mẫu bằng địa chỉ P3 cung cấp. Có thể bỏ `--device` nếu `REGISTERED_DEVICES` chỉ chứa một địa chỉ. Setup dùng tài khoản local #1 family, #2 provider, #3 primary, #4 backup; tạo plan 2 giờ, ký quỹ **100 ETH**, SLA 60 giây, phạt **20 ETH**/lần (Sepolia tự dùng 0.01 / 0.002 ETH), 2 ca liên tiếp bắt đầu sau khoảng 60 giây. Chép `PLAN_ID` được in vào `.env`; chỉ phát FALL sau thời điểm ca bắt đầu.
 
 Deploy sinh **ABI thật** tại `backend/abi/CareSLA.json`, `dashboard/CareSLA.json` và metadata `{address,chainId,deployBlock}`. File `deployments/localhost.json` trong repo chỉ là kết quả phiên thử nghiệm, không có nghĩa máy bạn đang có contract. **Mỗi lần restart node phải deploy/setup lại**, khởi động lại gateway/keeper và xử lý nonce MetaMask.
 
@@ -82,9 +82,9 @@ Tại `contracts/`, chạy thêm **ít nhất 20 phút trước buổi demo**:
 npm run setup:local -- --short-plan
 ```
 
-Lệnh này tạo **thêm** plan 5 phút, tốn thêm 0.01 ETH local/testnet; khóa thiết bị mẫu chỉ nằm trong RAM. Script chờ ca bắt đầu rồi gửi FALL có chữ ký. Giữ keeper chạy để chuyển cấp hai lần. Không thay `PLAN_ID` của gateway bằng ID plan ngắn. Không giảm `SETTLE_DELAY`.
+Lệnh này tạo **thêm** plan 5 phút, tốn thêm 100 ETH local (0.01 ETH trên Sepolia); khóa thiết bị mẫu chỉ nằm trong RAM. Script chờ ca bắt đầu rồi gửi FALL có chữ ký. Giữ keeper chạy để chuyển cấp hai lần. Không thay `PLAN_ID` của gateway bằng ID plan ngắn. Không giảm `SETTLE_DELAY`.
 
-Sau khi giờ chain > `periodEnd + 600` và `pendingEvents == 0`, gọi `settle(planId)` qua console Hardhat hoặc dashboard khi P5 bàn giao. Trong console `npx hardhat console --network localhost`, đọc địa chỉ từ deployment, dùng `ethers.getContractAt("CareSLA", address)` và chờ `(await contract.settle(planId)).wait()`. Plan có 2 vi phạm: family được 0.004 ETH, provider 0.006 ETH (không tính gas). Giữ receipt/bằng chứng số dư thật.
+Sau khi giờ chain > `periodEnd + 600` và `pendingEvents == 0`, gọi `settle(planId)` qua console Hardhat hoặc dashboard khi P5 bàn giao. Trong console `npx hardhat console --network localhost`, đọc địa chỉ từ deployment, dùng `ethers.getContractAt("CareSLA", address)` và chờ `(await contract.settle(planId)).wait()`. Plan có 2 vi phạm: family được 40 ETH, provider 60 ETH trên local (Sepolia: 0.004 / 0.006 ETH), chưa trừ gas. Giữ receipt/bằng chứng số dư thật.
 
 Kịch bản toàn hệ thống cần cả nhóm xác nhận: CANCEL chỉ off-chain; FALL được nhận đúng hạn; FALL quá hạn hai cấp; ARRIVAL; chain lỗi nhưng Telegram vẫn tới; settle plan ngắn. Chạy thông 3 lần và quay video mới đạt Mốc 2.
 

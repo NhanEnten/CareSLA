@@ -29,8 +29,8 @@ Không đọc `iot_code/`, `ai_model/`, `node_modules/`.
 | Tham số | Mặc định | Lý do |
 |---|---|---|
 | SLA | **30 giây** | 2 cấp chuyển trong 60 giây (AGENTS 6.4 ghi 60 s; ghi rõ khác biệt này trong IC-18) |
-| Mức phạt | 0,2 ETH | Số tròn, dễ nhìn khi chia tiền |
-| Ký quỹ | 1 ETH | |
+| Mức phạt | **20 ETH** | Số tròn, dễ nhìn khi chia tiền (chốt 2026-09-28, giống `demo_setup.js`) |
+| Ký quỹ | **100 ETH** | Ví Hardhat có 10.000 ETH; chỉ dùng local |
 | Ngày kết thúc kỳ | giờ chain + **15 phút** | Đủ cho mọi sự cố trong demo |
 | Ca trực | bắt đầu giờ chain + **20 giây**, kết thúc = ngày kết thúc kỳ | `commitShift` bắt buộc `start > block.timestamp` |
 | Nhân viên chính / dự phòng | ví Hardhat #3 / #4 | |
@@ -92,7 +92,7 @@ Header giống trang giám sát (tên ứng dụng, huy hiệu mạng, nút kế
 | 3:00 | CANCEL | Chỉ ghi ở gateway, không lên chain |
 | 3:30 | FALL #1 → ví #3 bấm Xác nhận trong 30 s → ARRIVAL | Không vi phạm |
 | 5:00 | FALL #2 → không bấm: 30 s chuyển dự phòng, 60 s báo gia đình → ARRIVAL | 2 vi phạm, ghi tự động |
-| 7:00 | ⏩ Tua giờ → Settle | Gia đình nhận 0,4 ETH, trung tâm 0,6 ETH |
+| 7:00 | ⏩ Tua giờ → Settle | Gia đình nhận 40 ETH, trung tâm 60 ETH |
 | 8:00 | Dự phòng / hỏi đáp | |
 
 Ghi chú:
@@ -102,7 +102,7 @@ Ghi chú:
 ## 5. Kiểm thử bắt buộc trước khi báo xong
 
 1. `node --check dashboard/setup.js dashboard/app.js`. Không có `id` nào JS gọi mà HTML thiếu.
-2. **Test tự động không cần trình duyệt**: script trong `tools/` (hoặc scratchpad nếu không muốn commit) chạy `setup.js` trong Node `vm` với DOM giả và `window.ethereum` giả chuyển tiếp tới `127.0.0.1:8545` bằng ví #1/#2. Đi hết ①→④, kiểm tra planId, trạng thái `accepted`, bảng ca, lỗi `start in past` được dịch đúng. Sau đó chạy `fake_device.py` FALL/ARRIVAL để trang giám sát nhận sự cố, tua giờ, settle và kiểm tra chia tiền 0,4 / 0,6 ETH với 2 vi phạm.
+2. **Test tự động không cần trình duyệt**: script trong `tools/` (hoặc scratchpad nếu không muốn commit) chạy `setup.js` trong Node `vm` với DOM giả và `window.ethereum` giả chuyển tiếp tới `127.0.0.1:8545` bằng ví #1/#2. Đi hết ①→④, kiểm tra planId, trạng thái `accepted`, bảng ca, lỗi `start in past` được dịch đúng. Sau đó chạy `fake_device.py` FALL/ARRIVAL để trang giám sát nhận sự cố, tua giờ, settle và kiểm tra chia tiền 40 / 60 ETH với 2 vi phạm.
 3. **Tổng dượt thật 1 lần theo mục 4, bấm giờ**, dùng `fake_device.py`. Ghi thời gian từng mốc vào `docs/progress/P6.md`. Vượt 10 phút thì rút gọn các bước chậm nhất và ghi lại.
 4. `cd contracts && npx hardhat test` vẫn 66 passing (không được ảnh hưởng).
 5. Mở trang giám sát: màu, bố cục, nút giữ nguyên như trước (chỉ thêm link).
