@@ -188,3 +188,10 @@
 - **Telegram:** bỏ khỏi luồng cảnh báo. Cảnh báo = còi trên thiết bị + dòng log `ALERT_DISPATCH elapsed_ms=…` ở gateway (luôn in, dùng để đo độ trễ MQTT → gateway). Code `send_telegram` vẫn còn, chỉ chạy khi có token/chat ID; demo không cấu hình. Các biến `TELEGRAM_*` trong `.env.example` để trống.
 - **Firmware:** giữ `DETECTOR_MODE 1` (AI) và `DEBUG_STREAM 1` như P6 đã commit. Báo cáo phải ghi: AI trên ESP32 chưa khớp golden; topic `stream` (IC-16) là kênh debug; app partition còn ~3 %.
 - **Hệ quả cho báo cáo:** không còn số "độ trễ Telegram"; thay bằng độ trễ MQTT → gateway (`ALERT_DISPATCH`) và độ trễ thiết bị (bất động 2 s + cửa sổ hủy 10 s theo thiết kế).
+
+## IC-18. Trang thiết lập dashboard và demo local 10 phút
+- **Người đề xuất:** P1 giao P6 qua `prompts/P6_dashboard_demo_10phut.md` ngày 2026-09-28. **Trạng thái: CHỜ CHỐT**.
+- Mở rộng dashboard tối giản ở mục 4 bằng `setup.html` / `setup.js`: tạo hợp đồng và khóa ETH, chấp nhận, cam kết ca trước, mở giám sát và kết thúc demo. Giữ trang giám sát, chỉ thêm một link; CSS mới chỉ áp dụng trang thiết lập.
+- Đề xuất SLA demo **30 giây**, khác **60 giây** tại AGENTS.md mục 6.4. Trong khi chưa có xác nhận chốt của nhóm, trang giữ mặc định 60 giây; ô SLA vẫn là tham số hợp đồng có thể nhập. Không sửa mục 6 hoặc contract.
+- Nút tua giờ chỉ cho chainId 31337, xác nhận trước khi tăng tới `periodEnd + 601`; ảnh hưởng toàn node, khiến timestamp thiết bị dùng giờ thật bị từ chối. Chỉ dùng cuối demo. Không có giao dịch thật trên Sepolia/mainnet.
+- Không đổi ABI, MQTT, cách ký, gateway hoặc keeper. Quyền sửa dashboard đã được P1 ghi tại AGENTS.md mục 7 sau khi pull main `8706b32`.

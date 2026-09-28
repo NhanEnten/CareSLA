@@ -311,3 +311,19 @@ tr:hover td {
     .pulse { animation: none; }
     .btn { transition: none; }
 }
+
+/* Trang thiết lập dùng lại bảng màu; không tác động trang giám sát. */
+.setup-page .setup-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.setup-page label { display: flex; flex-direction: column; gap: .4rem; }
+.setup-page input { width: 100%; padding: .65rem; border: 1px solid var(--glass-border); border-radius: 8px; background: var(--surface); color: var(--text-primary); font: inherit; }
+.setup-page input:focus-visible { outline: 2px solid var(--accent); }
+.setup-page .setup-progress { display: flex; flex-wrap: wrap; gap: .75rem; }
+.setup-page .setup-progress span { padding: .65rem; border: 1px solid var(--glass-border); border-radius: 8px; }
+.setup-page .setup-done { color: var(--success-text); border-color: var(--success); }
+.setup-page .setup-locked { opacity: .6; }
+.setup-page .setup-proof { white-space: pre-wrap; overflow-wrap: anywhere; margin: .75rem 0; }
+.setup-page .action-row { flex-wrap: wrap; margin: .75rem 0; }
+.setup-page .action-row input { max-width: 12rem; }
+.setup-page p { overflow-wrap: anywhere; }
+.setup-page td { overflow-wrap: anywhere; max-width: 15rem; }
+.setup-page a { color: var(--accent); }
