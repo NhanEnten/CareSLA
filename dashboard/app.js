@@ -1,7 +1,12 @@
 const PLAN_ID = Number(new URLSearchParams(location.search).get("plan") || 1);
 let provider;
 let signer;
-let contract;
+let contract;          // ký giao dịch qua MetaMask (acknowledge, settle)
+let readProvider;      // chỉ để đọc dữ liệu
+let readContract;
+let fetching = false;  // tránh hai lần đọc chồng nhau
+const LOCAL_RPC = 'http://127.0.0.1:8545';
+const POLL_MS = 2000;
 let contractAddress;
 let networkId;
 let currentBlockTimestamp = Math.floor(Date.now() / 1000);
@@ -79,8 +84,15 @@ async function connectWallet() {
 
         contract = new ethers.Contract(contractAddress, abi, signer);
 
+        // Đọc thẳng từ Hardhat node: MetaMask cache kết quả đọc theo block và chỉ hỏi
+        // block mới theo chu kỳ riêng, làm dashboard trễ hàng chục giây trên mạng local.
+        readProvider = networkId === 31337
+            ? new ethers.JsonRpcProvider(LOCAL_RPC, 31337, { staticNetwork: true })
+            : provider;
+        readContract = new ethers.Contract(contractAddress, abi, readProvider);
+
         // Start polling
-        setInterval(fetchData, 4000);
+        setInterval(fetchData, POLL_MS);
         fetchData();
 
     } catch (error) {
@@ -90,14 +102,17 @@ async function connectWallet() {
 }
 
 async function fetchData() {
-    if (!contract) return;
+    if (!readContract || fetching) return;
+    fetching = true;
     try {
-        // Sync block time for countdown
-        const block = await provider.getBlock('latest');
+        // Đọc song song: giờ block, plan, số sự cố
+        const [block, plan, count] = await Promise.all([
+            readProvider.getBlock('latest'),
+            readContract.getPlan(PLAN_ID),
+            readContract.eventCount(),
+        ]);
         currentBlockTimestamp = Number(block.timestamp);
 
-        // Fetch Plan Info
-        const plan = await contract.getPlan(PLAN_ID);
         // [family, provider, device, slaSeconds, penaltyWei, periodEnd, deposit, accepted, settled, violations, shiftCount, pendingEvents]
         
         const periodEnd = Number(plan[5]);
@@ -121,13 +136,15 @@ async function fetchData() {
         }
 
         // Fetch Events
-        const eventCount = Number(await contract.eventCount());
+        const eventCount = Number(count);
+        const ids = Array.from({ length: eventCount }, (_, k) => k + 1);
+        const events = await Promise.all(ids.map((id) => readContract.getFallEvent(id)));
         let html = '';
         if (eventCount === 0) {
             html = '<tr><td colspan="5" class="text-center">Chưa có sự cố nào.</td></tr>';
         } else {
             for (let i = 1; i <= eventCount; i++) {
-                const ev = await contract.getFallEvent(i);
+                const ev = events[i - 1];
                 // [planId, ts, dataHash, primary, backup, reportedAt, deadline, level, status, ackBy, ackAt, arrivedAt]
                 
                 if (Number(ev[0]) !== PLAN_ID) continue; // Only for this plan
@@ -185,6 +202,8 @@ async function fetchData() {
 
     } catch (e) {
         console.error("Fetch Data Error:", e);
+    } finally {
+        fetching = false;
     }
 }
 

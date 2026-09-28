@@ -261,11 +261,14 @@ def get_on_duty(plan_id, ts):
 
 def handle_fall(device, ts, nonce, data_hash, sig_hex, t_received):
     print(f"FALL DETECTED from {device} (nonce {nonce})")
+    # IC-17: nhóm bỏ Telegram; cảnh báo là dòng log này (+ còi trên thiết bị).
+    # Luôn in độ trễ từ lúc nhận MQTT để đo cho báo cáo.
+    print(f"ALERT_DISPATCH elapsed_ms={(time.time() - t_received) * 1000:.1f}")
     chats = get_on_duty(PLAN_ID, ts)
     primary_chat = chats["primary"]
     if primary_chat:
+        # Telegram chỉ còn là tùy chọn, demo không cấu hình
         success = send_telegram(primary_chat, f"🚨 TÉ NGÃ PHÁT HIỆN! Thiết bị: {device}, Nonce: {nonce}")
-        print(f"ALERT_DISPATCH elapsed_ms={(time.time() - t_received) * 1000:.1f} telegram_ok={success}")
         t_telegram_ok = time.time() if success else None
         conn = sqlite3.connect(DB_FILE)
         c = conn.cursor()

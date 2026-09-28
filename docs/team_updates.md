@@ -7,6 +7,14 @@
 
 ---
 
+## [2026-09-28, lần 14] Dashboard chậm ~35 s: đã sửa · ✅ IC-17 bỏ Telegram, giữ config firmware
+- **Nguyên nhân chậm (P1 đo trên Hardhat local):**
+  - Gateway → chain: **35–50 ms** (FALL qua MQTT callback tới khi `eventCount` tăng). Không phải chỗ chậm.
+  - **Dashboard đọc chain qua MetaMask** (`BrowserProvider`). MetaMask cache kết quả `eth_call` theo block và chỉ hỏi block mới theo chu kỳ riêng (⚠️ khoảng 20 s trên mạng tự thêm, theo hiểu biết của P1, chưa đo trực tiếp), cộng vòng đọc 4 s, đọc tuần tự từng sự cố.
+  - Thiết bị gửi FALL sau **bất động 2 s + cửa sổ hủy 10 s** (đúng thiết kế AGENTS.md mục 3), nên từ lúc té tới lúc có FALL tối thiểu ~12 s. Không phải lỗi.
+- **Đã sửa `dashboard/app.js` (chỉ logic, giao diện giữ nguyên):** trên Hardhat (31337) đọc thẳng `http://127.0.0.1:8545` bằng `JsonRpcProvider`; MetaMask chỉ dùng để **ký** `acknowledge`/`settle`. Đọc song song, 2 s/lần, chặn đọc chồng. Sepolia vẫn đọc qua MetaMask. Đo lại: dòng sự cố mới hiện sau **~2,5 s** tính từ lúc chạy script gửi FALL (đã gồm thời gian khởi động Python), không có lệnh đọc nào đi qua MetaMask.
+- **IC-17 ĐÃ CHỐT:** bỏ Telegram; cảnh báo = còi + log `ALERT_DISPATCH elapsed_ms=…` ở gateway (luôn in). Giữ `DETECTOR_MODE 1`, `DEBUG_STREAM 1`. AGENTS.md mục 3, 5, 6.4, 11 đã cập nhật. IC-16 (topic `stream`) vẫn là kênh debug.
+
 ## [2026-09-28, lần 13] ✅ Đã merge nhánh `p6` (commit `27ebd46`)
 - **Có gì mới:** `secrets.h.example`; `DETECTOR_MODE` (0 = ngưỡng, 1 = AI) và `DEBUG_STREAM` trong `iot_code/main/config.h`; buffer MQTT 8192; CMake không áp patch TFLite lặp; gateway so `dataHash` ở cả hai thứ tự `event`/`raw`, cảnh báo heartbeat 1 lần mỗi đợt + báo khôi phục, đường cảnh báo không gọi RPC; `tools/fake_device.py` (ESP32 giả), `tools/check_local_e2e.py` (E2E 3 vòng), `tools/test_p6_gateway.py`; `docs/demo_runbook.md`; README chạy dashboard từ gốc repo. Dashboard **không đổi** (giữ giao diện P5 ngày 28/09).
 - **P1 chạy lại sau merge:** 66 test contract, 20 unit keeper, 4 test gateway P6, `state_test` đều đạt. P6 báo E2E phần mềm 3 vòng PASS và ESP32 thật đã gửi CANCEL, FALL lên chain local; **chưa** có ARRIVAL bằng nút thật, Telegram thật, video.

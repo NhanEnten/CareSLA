@@ -182,3 +182,9 @@
 - **Vấn đề:** không có trong AGENTS.md 6.1. Dữ liệu sức khỏe thô phát liên tục lên broker, trong khi câu trả lời chung của nhóm là "dữ liệu thô chỉ gửi quanh sự kiện". Tốn Wi-Fi và CPU của ESP32.
 - **Đề xuất (P1):** giữ làm **công cụ debug**, bọc bằng cờ `DEBUG_STREAM` mặc định **0**; không đưa vào AGENTS.md 6.1 và không trình bày như tính năng. Nếu nhóm muốn dùng khi demo thì bật riêng lúc demo và ghi trong báo cáo là kênh debug.
 - **Quyết định:** chờ nhóm.
+
+## IC-17. Bỏ Telegram; giữ cấu hình firmware thử nghiệm
+- **Người đề xuất:** nhóm (ghi trong progress P6) · **Quyết định:** trưởng nhóm P1, 2026-09-28 · **Ảnh hưởng:** P3, P5, P6, báo cáo · **Trạng thái:** **ĐÃ CHỐT**
+- **Telegram:** bỏ khỏi luồng cảnh báo. Cảnh báo = còi trên thiết bị + dòng log `ALERT_DISPATCH elapsed_ms=…` ở gateway (luôn in, dùng để đo độ trễ MQTT → gateway). Code `send_telegram` vẫn còn, chỉ chạy khi có token/chat ID; demo không cấu hình. Các biến `TELEGRAM_*` trong `.env.example` để trống.
+- **Firmware:** giữ `DETECTOR_MODE 1` (AI) và `DEBUG_STREAM 1` như P6 đã commit. Báo cáo phải ghi: AI trên ESP32 chưa khớp golden; topic `stream` (IC-16) là kênh debug; app partition còn ~3 %.
+- **Hệ quả cho báo cáo:** không còn số "độ trễ Telegram"; thay bằng độ trễ MQTT → gateway (`ALERT_DISPATCH`) và độ trễ thiết bị (bất động 2 s + cửa sổ hủy 10 s theo thiết kế).

@@ -30,7 +30,7 @@ Nếu bạn định đề xuất tính năng chỉ "ghi dữ liệu lên chain" 
 
 | Luồng | Đường đi | Độ trễ mục tiêu | Mục đích |
 |---|---|---|---|
-| **Cảnh báo** | ESP32 → MQTT → Gateway → Telegram | dưới 2 giây | Cứu người, không phụ thuộc blockchain |
+| **Cảnh báo** | ESP32 (còi) → MQTT → Gateway (log `ALERT_DISPATCH`) | dưới 2 giây | Cứu người, không phụ thuộc blockchain. **Bỏ Telegram** (IC-17) |
 | **Trách nhiệm** | Gateway → Smart Contract → Dashboard | vài giây đến vài phút | Bằng chứng, phạt, thanh toán |
 
 Nếu chain lỗi hoặc chậm, **cảnh báo vẫn phải đến**. Gateway giữ hàng đợi và gửi giao dịch lên chain sau.
@@ -71,7 +71,7 @@ IDLE → phát hiện va chạm (AI) → kiểm tra bất động N giây → **
 | Firmware | **ESP-IDF v5.x**, C cơ bản (C++ chỉ ở phần TFLite Micro), `esp-mqtt`, driver I2C của ESP-IDF, SNTP, NVS, component `espressif/esp-tflite-micro` | Viết đơn giản, ít file, ít trừu tượng |
 | AI | Python, TensorFlow/Keras, TFLite converter (INT8 full-integer) | |
 | Dashboard | HTML + JS thuần, ethers v6 bản UMD từ CDN (ghim phiên bản), chạy qua `python -m http.server` | Không dùng React, không mở bằng `file://` |
-| Cảnh báo | Telegram Bot API | |
+| Cảnh báo | Còi trên thiết bị + log gateway | Telegram đã bỏ (IC-17); code gửi Telegram còn lại chỉ là tùy chọn, demo không cấu hình |
 
 Nếu không chắc cú pháp hoặc API của một thư viện, **kiểm tra phiên bản đã cài và tài liệu chính thức**, không được đoán.
 
@@ -192,6 +192,7 @@ event Settled(uint256 indexed planId, uint256 toProvider, uint256 refundFamily);
 |---|---|
 | SLA | 60 giây |
 | Heartbeat | 60 giây, cảnh báo nếu mất quá 120 giây |
+| Firmware demo (IC-17) | `DETECTOR_MODE 1` (AI), `DEBUG_STREAM 1`, giữ theo quyết định trưởng nhóm 2026-09-28 |
 | Cửa sổ hủy | 10 giây |
 | Tần số lấy mẫu | 100 Hz (⚠️ P4 xác nhận lại với KFall ở Giai đoạn 0) |
 | Thời gian bất động, độ dài cửa sổ AI, chuẩn hóa đầu vào | P4 chốt, ghi vào `docs/ai_input_spec.md` |
@@ -280,5 +281,5 @@ Viết bằng tiếng Việt, cho người mới học. Không chép lại cả 
 ## 11. Câu trả lời chung cả nhóm phải thống nhất
 - **Tại sao không dùng MySQL?** Bên giữ database là bên bị phạt, nên có xung đột lợi ích. Contract giữ tiền và tự thực thi luật, không bên nào sửa được.
 - **Contract tự chạy khi quá hạn bằng cách nào?** Contract không tự chạy. Keeper Python gọi `checkTimeout()`; ai cũng gọi được hàm này, kể cả gia đình.
-- **Blockchain chậm thì sao?** Cảnh báo đi qua MQTT và Telegram, blockchain chỉ ghi trách nhiệm.
+- **Blockchain chậm thì sao?** Cảnh báo đi qua còi thiết bị và MQTT tới gateway, không chờ blockchain; blockchain chỉ ghi trách nhiệm.
 - **Dữ liệu sức khỏe có bị công khai không?** Không. On-chain chỉ có hash; dữ liệu thô nằm off-chain.
