@@ -97,6 +97,8 @@ contract_address = os.getenv("CONTRACT_ADDRESS")
 deploy_block = 0
 tx_queue = queue.Queue()
 latest_event_id = {}
+# Chỉ đếm báo động giả (CANCEL) từ lúc tạo hợp đồng PLAN_ID; không xóa dữ liệu cũ
+false_alarm_since = 0.0
 
 def init_contract():
     global contract, contract_address, deploy_block
@@ -218,6 +220,7 @@ def tx_worker():
         tx_queue.task_done()
 
 def escalated_monitor():
+    global false_alarm_since
     if not contract:
         return
         
@@ -246,12 +249,12 @@ def escalated_monitor():
                     if chat:
                         send_telegram(chat, msg)
                         
-                plan_logs = contract.events.PlanCreated.get_logs(from_block=last_block, to_block=current_block)
-                if plan_logs:
-                    print("New CarePlan created, resetting false alarms count...")
-                    with closing(sqlite3.connect(DB_FILE)) as conn:
-                        conn.execute('DELETE FROM events WHERE event_type = 3')
-                        conn.commit()
+                # Hợp đồng PLAN_ID vừa tạo (hoặc quét lại lúc khởi động): đếm báo động giả từ mốc này.
+                # Giữ nguyên bản ghi CANCEL trong SQLite vì đó là bằng chứng off-chain.
+                for plan_log in contract.events.PlanCreated.get_logs(from_block=last_block, to_block=current_block):
+                    if plan_log.args.planId == PLAN_ID:
+                        false_alarm_since = w3.eth.get_block(plan_log.blockNumber)["timestamp"]
+                        print(f"Plan {PLAN_ID} created: counting false alarms from {false_alarm_since}")
                         
                 last_block = current_block + 1
         except Exception as e:
@@ -518,7 +521,7 @@ def metrics_monitor():
             max_lat = round(max(latencies)) if latencies else 0
             
             # 2. False alarms (CANCEL event_type = 3)
-            c.execute('SELECT COUNT(*) FROM events WHERE event_type = 3')
+            c.execute('SELECT COUNT(*) FROM events WHERE event_type = 3 AND t_received >= ?', (false_alarm_since,))
             false_alarm_count = c.fetchone()[0]
             
             # 3. Heartbeats

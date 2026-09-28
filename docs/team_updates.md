@@ -7,6 +7,17 @@
 
 ---
 
+## [2026-09-28, lần 18] ✅ Đã merge `p5-backend` (`dc192eb`) và `p6` (`deeb07b`)
+- **P5:** dashboard hiện **giờ té ngã** dưới mã sự cố; tài liệu `docs/kien_truc_va_luong_hoat_dong.md` và `docs/report/P5_thiet_ke_blockchain.md`.
+- **P1 sửa lỗi gateway của P5:** bản của P5 **xóa mọi bản ghi CANCEL** trong SQLite mỗi khi thấy bất kỳ `PlanCreated` nào, và vì gateway quét lại từ `deployBlock` khi khởi động nên **mỗi lần khởi động lại cũng xóa**. Đó là mất bằng chứng off-chain. Nay: **không xóa**, chỉ đếm CANCEL từ lúc tạo hợp đồng `PLAN_ID` (`false_alarm_since`). Đã chạy thử trên node local: 2 CANCEL cũ không bị đếm, 1 CANCEL mới được đếm, cả 3 vẫn còn trong DB; 4 test gateway P6 đạt.
+- **P1 sửa 4 câu sai sự thật trong `P5_thiet_ke_blockchain.md`:** contract **chưa deploy Sepolia**; dùng `ECDSA.recover` (OpenZeppelin), không phải `ecrecover` trực tiếp; không còn Telegram báo gia đình (IC-17); `checkTimeout` **chỉ ghi vi phạm, không trừ tiền ngay**, tiền phạt tính lúc `settle`.
+- **P6:** test sau merge PASS 169 giây với 100/20 ETH (2 vi phạm → 40/60 ETH). Bàn giao 4 việc tinh chỉnh dashboard, **chưa ai làm**:
+  1. Mở hợp đồng có sẵn nhưng thẻ ① vẫn hiện giờ kết thúc của form tạo mới, dễ tưởng hợp đồng còn hạn.
+  2. Trang giám sát ghi "Đang hoạt động" cho cả hợp đồng đã hết kỳ, chưa phân biệt "hết kỳ, chờ chia tiền".
+  3. Cần hướng dẫn cấp quyền site cho **từng** ví MetaMask khi đổi vai trò (không thì nút Chấp nhận bị khóa).
+  4. Nhãn "Thử sửa ca đã qua" dễ hiểu nhầm; thực chất là thử cam kết ca mới có giờ bắt đầu trong quá khứ.
+- ⚠️ P6 ghi nhận lần thử thật: FALL từ ESP32 bị từ chối `ts after period` vì kỳ hợp đồng đã hết. **Khi demo, tạo hợp đồng mới ngay trước buổi demo.**
+
 ## [2026-09-28, lần 17] ✅ Đã merge `p6` (`3f341c9`): trang thiết lập hợp đồng · IC-18 ĐÃ CHỐT
 - **Mới:** `dashboard/setup.html` (link "Thiết lập hợp đồng" trên trang giám sát): ① gia đình tạo hợp đồng, khóa ký quỹ → ② trung tâm chấp nhận → ③ cam kết ca (nút "Thử sửa ca đã qua": contract từ chối, không tạo giao dịch) → ④ mở giám sát; khu "Kết thúc demo" có nút ⏩ tua giờ (chỉ Hardhat local) và Settle, hiện số dư trước/sau. Chỉ chạy ở chainId 31337. Trang giám sát không đổi (`app.js` giữ nguyên).
 - **P1 sửa khi merge:** mặc định ký quỹ **100 ETH**, phạt **20 ETH** (theo lần 16); thêm nút **"Hợp đồng mới"** để tạo hợp đồng khác khi trang đang mở một hợp đồng.
