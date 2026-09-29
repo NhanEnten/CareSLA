@@ -7,6 +7,11 @@
 
 ---
 
+## [2026-09-29, lần 19] 📦 README viết lại theo yêu cầu nộp bài
+- Yêu cầu nộp: repo public gồm `README.md` (cài đặt, cấu hình, chạy demo), `/contracts`, `/ai_model`, `/iot_code`, `Report_NhomXX.pdf`.
+- P1 viết lại `README.md` (quyền trưởng nhóm, file gốc của P2): bỏ Telegram (IC-17), bỏ phần "bàn giao P2"; thêm cấu trúc repo, bảng ví Hardhat, demo 10 phút qua `setup.html`, nạp firmware, tóm tắt AI, kiểm thử, giới hạn.
+- **Còn thiếu:** `Report_NhomXX.pdf` ở gốc repo (P5 gộp báo cáo).
+
 ## [2026-09-28, lần 18] ✅ Đã merge `p5-backend` (`dc192eb`) và `p6` (`deeb07b`)
 - **P5:** dashboard hiện **giờ té ngã** dưới mã sự cố; tài liệu `docs/kien_truc_va_luong_hoat_dong.md` và `docs/report/P5_thiet_ke_blockchain.md`.
 - **P1 sửa lỗi gateway của P5:** bản của P5 **xóa mọi bản ghi CANCEL** trong SQLite mỗi khi thấy bất kỳ `PlanCreated` nào, và vì gateway quét lại từ `deployBlock` khi khởi động nên **mỗi lần khởi động lại cũng xóa**. Đó là mất bằng chứng off-chain. Nay: **không xóa**, chỉ đếm CANCEL từ lúc tạo hợp đồng `PLAN_ID` (`false_alarm_since`). Đã chạy thử trên node local: 2 CANCEL cũ không bị đếm, 1 CANCEL mới được đếm, cả 3 vẫn còn trong DB; 4 test gateway P6 đạt.
